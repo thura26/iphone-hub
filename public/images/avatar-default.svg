@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Default profile avatar">
+  <defs>
+    <linearGradient id="bg" x1="24" y1="16" x2="232" y2="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#cfe0ff"/>
+      <stop offset="0.52" stop-color="#e6ddff"/>
+      <stop offset="1" stop-color="#ffdce6"/>
+    </linearGradient>
+    <linearGradient id="bust" x1="128" y1="60" x2="128" y2="232" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.72" stop-color="#f6f8ff"/>
+      <stop offset="1" stop-color="#e9eefc"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(72 50) rotate(48) scale(150)">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".9"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="clip"><circle cx="128" cy="128" r="128"/></clipPath>
+  </defs>
+  <g clip-path="url(#clip)">
+    <rect width="256" height="256" fill="url(#bg)"/>
+    <rect width="256" height="256" fill="url(#glow)"/>
+    <circle cx="210" cy="218" r="86" fill="#ffffff" opacity=".18"/>
+    <circle cx="32" cy="208" r="52" fill="#ffffff" opacity=".12"/>
+    <rect x="112" y="118" width="32" height="44" rx="14" fill="url(#bust)"/>
+    <circle cx="128" cy="99" r="38" fill="url(#bust)"/>
+    <path d="M128 152c-40 0-72 27-72 62v42h144v-42c0-35-32-62-72-62Z" fill="url(#bust)"/>
+    <circle cx="128" cy="128" r="118" fill="none" stroke="#ffffff" stroke-opacity=".45" stroke-width="2"/>
+    <path d="M196 70l3.4 9.6L209 83l-9.6 3.4L196 96l-3.4-9.6L183 83l9.6-3.4L196 70Z" fill="#ffffff" opacity=".7"/>
+    <path d="M64 54l2.4 6.6L73 63l-6.6 2.4L64 72l-2.4-6.6L55 63l6.6-2.4L64 54Z" fill="#ffffff" opacity=".5"/>
+  </g>
+</svg>
