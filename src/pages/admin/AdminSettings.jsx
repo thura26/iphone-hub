@@ -392,13 +392,16 @@ export default function AdminSettings() {
             {lastUpdated && (
               <p className="mt-2 text-[10px]">
                 Last saved{' '}
-                {new Date(lastUpdated).toLocaleString('en-GB', {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
+                {new Date(lastUpdated)
+                  .toLocaleString('en-GB', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true,
+                  })
+                  .replace(/\b(am|pm)\b/gi, (meridiem) => meridiem.toUpperCase())}
               </p>
             )}
           </section>

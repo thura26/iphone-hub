@@ -30,7 +30,7 @@ const channels = [
     icon: Phone,
     title: 'Call us',
     line1: '+95 9 000 000 000',
-    line2: 'Mon–Sat, 9:00–19:00',
+    line2: 'Mon–Sat, 9:00 AM – 7:00 PM',
     href: 'tel:+959000000000',
   },
   {
@@ -147,7 +147,7 @@ export default function Contact() {
               </span>
               <div>
                 <p className="text-xs font-semibold text-ink">Usually replies in under a day</p>
-                <p className="text-[11px] text-muted">Mon–Sat, 9:00–19:00</p>
+                <p className="text-[11px] text-muted">Mon–Sat, 9:00 AM – 7:00 PM</p>
               </div>
             </div>
           </Reveal>
@@ -312,11 +312,11 @@ export default function Contact() {
                 <dl className="mt-4 space-y-1.5 text-[11px] text-muted">
                   <div className="flex items-center justify-between gap-3">
                     <dt>Monday – Friday</dt>
-                    <dd className="font-medium text-ink">9:00 – 19:00</dd>
+                    <dd className="font-medium text-ink">9:00 AM – 7:00 PM</dd>
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <dt>Saturday</dt>
-                    <dd className="font-medium text-ink">9:00 – 17:00</dd>
+                    <dd className="font-medium text-ink">9:00 AM – 5:00 PM</dd>
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <dt>Sunday</dt>

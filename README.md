@@ -5,6 +5,7 @@ React + Vite + Tailwind CSS + Supabase e-commerce web app for iPhones.
 ## Features
 
 **Customer**
+
 - Welcome, Home, Shop (series/storage/price filters + search), Product Detail
 - Cart, 3-step Checkout (Shipping / Payment / Review), Order Success
 - Auth (signup/login/password reset) via Supabase Auth
@@ -14,6 +15,7 @@ React + Vite + Tailwind CSS + Supabase e-commerce web app for iPhones.
 - MMK currency, English UI
 
 **Admin**
+
 - Dashboard (sales, orders, customers, products)
 - Products CRUD with variants (storage/color/price/stock/images)
 - Orders management with status updates

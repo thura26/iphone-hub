@@ -30,13 +30,16 @@ export function formatDate(value, options = {}) {
 
 export function formatDateTime(value) {
   if (!value) return '—'
-  return new Date(value).toLocaleString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return new Date(value)
+    .toLocaleString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    })
+    .replace(/\b(am|pm)\b/gi, (meridiem) => meridiem.toUpperCase())
 }
 
 export function slugify(text) {
