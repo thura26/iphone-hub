@@ -16,6 +16,7 @@ import { toast } from 'sonner'
 import Reveal from '@/components/common/Reveal'
 import Seo from '@/components/common/Seo'
 import Select from '@/components/common/Select'
+import { useSiteSettings } from '@/context/SiteSettingsContext'
 
 const topics = [
   { value: 'order', label: 'Order status' },
@@ -24,38 +25,6 @@ const topics = [
   { value: 'warranty', label: 'Warranty & repairs' },
   { value: 'returns', label: 'Returns & refunds' },
   { value: 'other', label: 'Something else' },
-]
-
-const channels = [
-  {
-    icon: Phone,
-    title: 'Call us',
-    line1: '+95 9 000 000 000',
-    line2: 'Mon–Sat, 9:00 AM – 7:00 PM',
-    href: 'tel:+959000000000',
-  },
-  {
-    icon: Mail,
-    title: 'Email us',
-    line1: 'hello@iphonehub.com',
-    line2: 'Replies within one business day',
-    href: 'mailto:hello@iphonehub.com',
-  },
-  {
-    icon: MapPin,
-    title: 'Visit the showroom',
-    line1: 'No. 88, Pyay Road',
-    line2: 'Kamayut, Yangon',
-    href: '#showroom',
-  },
-  {
-    icon: PackageSearch,
-    title: 'Track an order',
-    line1: 'Check your delivery status',
-    line2: 'Sign in to view your orders',
-    href: '/orders',
-    internal: true,
-  },
 ]
 
 const faqs = [
@@ -95,9 +64,43 @@ const emptyForm = {
 }
 
 export default function Contact() {
+  const { store } = useSiteSettings()
   const [form, setForm] = useState(emptyForm)
   const [sending, setSending] = useState(false)
   const timerRef = useRef(null)
+  const phoneHref = `tel:${store.phone.replace(/[^\d+]/g, '')}`
+
+  const channels = [
+    {
+      icon: Phone,
+      title: 'Call us',
+      line1: store.phone,
+      line2: 'Mon–Sat, 9:00 AM – 7:00 PM',
+      href: phoneHref,
+    },
+    {
+      icon: Mail,
+      title: 'Email us',
+      line1: store.email,
+      line2: 'Replies within one business day',
+      href: `mailto:${store.email}`,
+    },
+    {
+      icon: MapPin,
+      title: 'Visit the showroom',
+      line1: store.address,
+      line2: 'Open Mon–Sat, 9:00 AM – 5:00 PM',
+      href: '#showroom',
+    },
+    {
+      icon: PackageSearch,
+      title: 'Track an order',
+      line1: 'Check your delivery status',
+      line2: 'Sign in to view your orders',
+      href: '/orders',
+      internal: true,
+    },
+  ]
 
   useEffect(
     () => () => {
@@ -301,21 +304,19 @@ export default function Contact() {
                 className="relative h-36 border-b border-line bg-soft"
                 style={{
                   backgroundImage:
-                    'linear-gradient(#e3e3e6 1px, transparent 1px), linear-gradient(90deg, #e3e3e6 1px, transparent 1px)',
+                    'linear-gradient(var(--color-line) 1px, transparent 1px), linear-gradient(90deg, var(--color-line) 1px, transparent 1px)',
                   backgroundSize: '28px 28px',
                 }}
               >
-                <div className="absolute left-1/3 top-0 h-full w-6 -rotate-12 bg-white/70" />
-                <div className="absolute left-0 top-1/2 h-5 w-full -rotate-6 bg-white/70" />
+                <div className="absolute left-1/3 top-0 h-full w-6 -rotate-12 bg-surface/80 dark:bg-white/10" />
+                <div className="absolute left-0 top-1/2 h-5 w-full -rotate-6 bg-surface/80 dark:bg-white/10" />
                 <span className="absolute left-1/2 top-1/2 grid h-10 w-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-ink text-surface shadow-lg">
                   <MapPin size={18} />
                 </span>
               </div>
               <div className="p-5" id="showroom">
-                <h3 className="text-sm font-bold text-ink">iPhone Hub showroom</h3>
-                <p className="mt-2 text-xs leading-relaxed text-muted">
-                  No. 88, Pyay Road, Kamayut Township, Yangon, Myanmar.
-                </p>
+                <h3 className="text-sm font-bold text-ink">{store.name} showroom</h3>
+                <p className="mt-2 text-xs leading-relaxed text-muted">{store.address}</p>
                 <dl className="mt-4 space-y-1.5 text-[11px] text-muted">
                   <div className="flex items-center justify-between gap-3">
                     <dt>Monday – Friday</dt>
@@ -343,11 +344,11 @@ export default function Contact() {
                 have your order number ready.
               </p>
               <div className="mt-4 flex flex-col gap-2">
-                <a href="tel:+959000000000" className="btn-primary btn-sm">
+                <a href={phoneHref} className="btn-primary btn-sm">
                   <Phone size={14} />
-                  Call +95 9 000 000 000
+                  Call {store.phone}
                 </a>
-                <a href="mailto:hello@iphonehub.com" className="btn-outline btn-sm">
+                <a href={`mailto:${store.email}`} className="btn-outline btn-sm">
                   <Mail size={14} />
                   Email us
                 </a>

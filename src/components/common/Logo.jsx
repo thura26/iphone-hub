@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom'
 import { Smartphone } from 'lucide-react'
+import { useSiteSettings } from '@/context/SiteSettingsContext'
 import { cn } from '@/lib/utils'
 
 export default function Logo({ compact = false, light = false, to = '/', className }) {
+  const { store } = useSiteSettings()
+
   return (
-    <Link to={to} className={cn('flex items-center gap-2.5', className)} aria-label="iPhone Hub home">
+    <Link to={to} className={cn('flex items-center gap-2.5', className)} aria-label={`${store.name} home`}>
       <span
         className={cn(
           'grid h-9 w-9 place-items-center rounded-[11px] shadow-sm',
@@ -15,7 +18,7 @@ export default function Logo({ compact = false, light = false, to = '/', classNa
       </span>
       {!compact && (
         <span className={cn('text-[17px] font-bold tracking-tight', light ? 'text-white' : 'text-ink')}>
-          iPhone Hub
+          {store.name}
         </span>
       )}
     </Link>

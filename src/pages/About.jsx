@@ -79,10 +79,10 @@ export default function About() {
           </Reveal>
 
           <Reveal delay={100} className="relative">
-            <div className="relative overflow-hidden rounded-[32px] border border-line bg-gradient-to-br from-[#eef5ff] via-[#e6eef8] to-[#dbe6f2] px-6 pb-6 pt-10 sm:px-10 sm:pt-12">
+            <div className="relative overflow-hidden rounded-[32px] border border-line bg-gradient-to-br from-[#eef5ff] via-[#e6eef8] to-[#dbe6f2] px-6 pb-6 pt-10 dark:from-[#101820] dark:via-[#0d141b] dark:to-[#0b1016] sm:px-10 sm:pt-12">
               <div
                 aria-hidden
-                className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-white/70 blur-2xl"
+                className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-white/70 blur-2xl dark:bg-white/10"
               />
               <img
                 src="/images/products/iphone-18-pro-glacier.webp"

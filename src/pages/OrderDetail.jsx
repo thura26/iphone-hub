@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import { supabase } from '@/supabaseClient'
 import { useAuth } from '@/context/AuthContext'
 import { useConfirm } from '@/context/ConfirmContext'
+import { useSiteSettings } from '@/context/SiteSettingsContext'
 import useRealtime from '@/hooks/useRealtime'
 import { downloadInvoice } from '@/lib/invoice'
 import {
@@ -43,6 +44,7 @@ const blankReturn = { reason: 'damaged_on_arrival', details: '' }
 export default function OrderDetail() {
   const { id } = useParams()
   const { user } = useAuth()
+  const { store } = useSiteSettings()
   const confirm = useConfirm()
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -508,7 +510,10 @@ export default function OrderDetail() {
 
           <section className="rounded-card border border-line bg-soft/60 p-4 text-[11px] leading-relaxed text-muted">
             Need help with this order? Contact us at{' '}
-            <span className="font-semibold text-ink">hello@iphonehub.com</span> mentioning {order.order_number}.
+            <a href={`mailto:${store.email}`} className="font-semibold text-ink hover:underline">
+              {store.email}
+            </a>{' '}
+            mentioning {order.order_number}.
           </section>
         </aside>
       </div>

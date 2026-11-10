@@ -20,8 +20,10 @@ import {
 import { toast } from 'sonner'
 import Logo from '@/components/common/Logo'
 import Avatar from '@/components/common/Avatar'
+import ThemeToggle from '@/components/common/ThemeToggle'
 import { useAuth } from '@/context/AuthContext'
 import { useConfirm } from '@/context/ConfirmContext'
+import { useSiteSettings } from '@/context/SiteSettingsContext'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -36,6 +38,7 @@ export default function MobileMenu({ open, onClose }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, profile, isAdmin, displayName, signOut } = useAuth()
+  const { store } = useSiteSettings()
   const confirm = useConfirm()
 
   const closeButtonRef = useRef(null)
@@ -154,15 +157,18 @@ export default function MobileMenu({ open, onClose }) {
       >
         <header className="flex shrink-0 items-center justify-between gap-3 border-b border-line px-4 py-3.5">
           <Logo />
-          <button
-            ref={closeButtonRef}
-            type="button"
-            onClick={onClose}
-            className="btn-icon -mr-1"
-            aria-label="Close menu"
-          >
-            <X size={19} />
-          </button>
+          <div className="flex items-center gap-0.5">
+            <ThemeToggle />
+            <button
+              ref={closeButtonRef}
+              type="button"
+              onClick={onClose}
+              className="btn-icon -mr-1"
+              aria-label="Close menu"
+            >
+              <X size={19} />
+            </button>
+          </div>
         </header>
 
         <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-8">
@@ -265,13 +271,16 @@ export default function MobileMenu({ open, onClose }) {
               Need a hand?
             </p>
             <div className="mt-2 space-y-1.5 text-xs text-muted">
-              <a href="mailto:hello@iphonehub.com" className="flex items-center gap-2 hover:text-ink">
+              <a href={`mailto:${store.email}`} className="flex items-center gap-2 hover:text-ink">
                 <Mail size={13} />
-                hello@iphonehub.com
+                {store.email}
               </a>
-              <a href="tel:+959000000000" className="flex items-center gap-2 hover:text-ink">
+              <a
+                href={`tel:${store.phone.replace(/[^\d+]/g, '')}`}
+                className="flex items-center gap-2 hover:text-ink"
+              >
                 <MessageSquare size={13} />
-                +95 9 000 000 000
+                {store.phone}
               </a>
             </div>
           </div>

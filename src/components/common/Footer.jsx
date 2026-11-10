@@ -1,40 +1,13 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Loader2, Mail, MapPin, Phone } from 'lucide-react'
+import { Mail, MapPin, Phone } from 'lucide-react'
 import { toast } from 'sonner'
-import { supabase } from '@/supabaseClient'
 import Logo from '@/components/common/Logo'
+import { useSiteSettings } from '@/context/SiteSettingsContext'
 
 const currentYear = new Date().getFullYear()
 
 export default function Footer() {
-  const [email, setEmail] = useState('')
-  const [subscribing, setSubscribing] = useState(false)
-
-  const subscribe = async (event) => {
-    event.preventDefault()
-    const normalized = email.trim().toLowerCase()
-    if (!normalized) return
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
-      toast.error('Please enter a valid email address')
-      return
-    }
-    setSubscribing(true)
-    const { error } = await supabase
-      .from('newsletter_subscribers')
-      .insert({ email: normalized, source: 'footer' })
-    setSubscribing(false)
-    if (error) {
-      toast.error(
-        error.code === '23505'
-          ? 'You are already on the list — thanks for sticking with us!'
-          : error.message,
-      )
-      return
-    }
-    toast.success('Thanks for subscribing! Watch your inbox for new drops.')
-    setEmail('')
-  }
+  const { store } = useSiteSettings()
 
   return (
     <footer className="mt-16 border-t border-line bg-surface">
@@ -43,8 +16,8 @@ export default function Footer() {
           <div>
             <Logo />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">
-              Premium iPhones and accessories, delivered across Myanmar. Genuine products,
-              transparent pricing, and a checkout that takes seconds.
+              {store.tagline} Genuine Apple products, transparent pricing, and delivery
+              across Myanmar.
             </p>
             <div className="mt-5 flex items-center gap-2">
               {[
@@ -90,36 +63,30 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="text-sm font-semibold text-ink">Stay in the loop</h4>
-            <p className="mt-4 text-sm text-muted">New launches and exclusive offers, no spam.</p>
-            <form onSubmit={subscribe} className="mt-3 flex overflow-hidden rounded-pill border border-line bg-soft/60 p-1">
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="Email address"
-                className="min-w-0 flex-1 bg-transparent px-3 text-sm text-ink outline-none placeholder:text-muted"
-                aria-label="Email address"
-              />
-              <button
-                type="submit"
-                disabled={subscribing}
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ink text-surface disabled:opacity-60"
-                aria-label="Subscribe to the newsletter"
-              >
-                {subscribing ? <Loader2 size={15} className="animate-spin" /> : <ArrowRight size={15} />}
-              </button>
-            </form>
-            <div className="mt-5 space-y-2 text-sm text-muted">
-              <p className="flex items-center gap-2"><Phone size={14} /> 09459038758</p>
-              <p className="flex items-center gap-2"><Mail size={14} /> hello@iphonehub.com</p>
-              <p className="flex items-center gap-2"><MapPin size={14} /> Yangon, Myanmar</p>
+            <h4 className="text-sm font-semibold text-ink">Get in touch</h4>
+            <p className="mt-4 text-sm text-muted">We reply within one business day.</p>
+            <div className="mt-4 space-y-2.5 text-sm text-muted">
+              <a href={`tel:${store.phone.replace(/[^\d+]/g, '')}`} className="flex items-center gap-2 hover:text-ink">
+                <Phone size={14} />
+                {store.phone}
+              </a>
+              <a href={`mailto:${store.email}`} className="flex items-center gap-2 hover:text-ink">
+                <Mail size={14} />
+                {store.email}
+              </a>
+              <p className="flex items-start gap-2">
+                <MapPin size={14} className="mt-0.5 shrink-0" />
+                {store.address}
+              </p>
             </div>
+            <Link to="/contact" className="mt-4 inline-flex text-xs font-semibold text-brand hover:underline">
+              Send us a message
+            </Link>
           </div>
         </div>
 
         <div className="mt-10 flex flex-col gap-4 border-t border-line pt-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>© {currentYear} iPhone Hub. Developed by Thura Linn Thant.</p>
+          <p>© {currentYear} {store.name}. Developed by Thura Linn Thant.</p>
           <div className="flex items-center gap-2">
             {['VISA', 'Mastercard', 'Apple Pay', 'COD'].map((label) => (
               <span key={label} className="rounded-md border border-line bg-soft px-2.5 py-1 text-[10px] font-semibold text-muted">

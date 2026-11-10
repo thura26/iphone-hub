@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import Logo from "@/components/common/Logo";
+import ThemeToggle from "@/components/common/ThemeToggle";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
 
@@ -220,13 +221,16 @@ export default function Auth() {
           <div className="lg:hidden">
             <Logo />
           </div>
-          <Link
-            to="/"
-            className="ml-auto inline-flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-ink"
-          >
-            <ArrowLeft size={14} />
-            Back to store
-          </Link>
+          <div className="ml-auto flex items-center gap-1">
+            <ThemeToggle />
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 px-2 text-xs font-semibold text-muted hover:text-ink"
+            >
+              <ArrowLeft size={14} />
+              Back to store
+            </Link>
+          </div>
         </div>
 
         <div className="flex flex-1 items-center justify-center px-5 pb-12 pt-4">

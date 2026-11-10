@@ -4,6 +4,7 @@ import {
   formatDateTime,
   formatNumber,
 } from '@/lib/utils'
+import { fetchSettings } from '@/lib/api'
 
 const money = (value) => `Ks ${formatNumber(value)}`
 const INK = [29, 29, 31]
@@ -16,6 +17,20 @@ const SOFT = [245, 245, 247]
  * jsPDF is loaded on demand so it never adds weight to the storefront bundle.
  */
 export async function downloadInvoice(order) {
+  let store = {
+    name: 'iPhone Hub',
+    tagline: 'Premium iPhones & accessories',
+    email: 'hello@iphonehub.com',
+    phone: '09459038758',
+    address: 'Yangon, Myanmar',
+  }
+  try {
+    const settings = await fetchSettings()
+    store = { ...store, ...(settings.store || {}) }
+  } catch (error) {
+    console.error('Could not load store details for invoice', error)
+  }
+
   const { jsPDF } = await import('jspdf')
   const doc = new jsPDF({ unit: 'pt', format: 'a4', compress: true })
   const pageWidth = doc.internal.pageSize.getWidth()
@@ -38,12 +53,12 @@ export async function downloadInvoice(order) {
   doc.text('iH', margin + 8.5, y + 22)
   doc.setTextColor(...INK)
   doc.setFontSize(18)
-  doc.text('iPhone Hub', margin + 46, y + 15)
+  doc.text(store.name, margin + 46, y + 15)
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8)
   doc.setTextColor(...MUTED)
-  doc.text('Premium iPhones & accessories - Yangon, Myanmar', margin + 46, y + 28)
-  doc.text('hello@iphonehub.com  |  09459038758', margin + 46, y + 39)
+  doc.text(`${store.tagline} - ${store.address}`, margin + 46, y + 28)
+  doc.text(`${store.email}  |  ${store.phone}`, margin + 46, y + 39)
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(20)
@@ -133,7 +148,7 @@ export async function downloadInvoice(order) {
     doc.text(`Invoice ${order.order_number}`, margin, y)
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(...MUTED)
-    doc.text('iPhone Hub', right, y, { align: 'right' })
+    doc.text(store.name, right, y, { align: 'right' })
     y += 18
     drawTableHead()
   }
@@ -234,7 +249,7 @@ export async function downloadInvoice(order) {
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(8)
   doc.setTextColor(...INK)
-  doc.text('Thank you for shopping with iPhone Hub.', margin, footerY)
+  doc.text(`Thank you for shopping with ${store.name}.`, margin, footerY)
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(...MUTED)
   doc.text(

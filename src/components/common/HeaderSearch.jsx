@@ -211,7 +211,7 @@ export default function HeaderSearch({
             aria-autocomplete="list"
             autoComplete="off"
           />
-          {query ? (
+          {query && (
             <button
               type="button"
               onClick={() => {
@@ -223,10 +223,6 @@ export default function HeaderSearch({
             >
               <X size={13} />
             </button>
-          ) : (
-            <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-line bg-surface px-1.5 py-0.5 text-[9px] font-semibold text-muted lg:block">
-              ⌘K
-            </span>
           )}
         </div>
       </form>

@@ -216,7 +216,7 @@ create table if not exists public.settings (
 );
 
 -- ------------------------------------------------------------
--- Returns, audit log, newsletter
+-- Returns and audit log
 -- ------------------------------------------------------------
 create table if not exists public.return_requests (
   id uuid primary key default gen_random_uuid(),
@@ -249,14 +249,6 @@ create table if not exists public.audit_logs (
 );
 
 create index if not exists audit_logs_created_idx on public.audit_logs(created_at desc);
-
-create table if not exists public.newsletter_subscribers (
-  id uuid primary key default gen_random_uuid(),
-  email text not null unique,
-  source text not null default 'footer',
-  active boolean not null default true,
-  created_at timestamptz not null default now()
-);
 
 -- ------------------------------------------------------------
 -- Helper functions
@@ -818,7 +810,6 @@ alter table public.coupons enable row level security;
 alter table public.settings enable row level security;
 alter table public.return_requests enable row level security;
 alter table public.audit_logs enable row level security;
-alter table public.newsletter_subscribers enable row level security;
 
 -- Drop policies from earlier versions of this file.
 do $$
@@ -938,16 +929,6 @@ create policy "audit_logs_admin_read" on public.audit_logs
 create policy "audit_logs_admin_insert" on public.audit_logs
   for insert with check (public.is_admin());
 
--- Newsletter (anyone can subscribe; admins manage the list)
-create policy "newsletter_public_insert" on public.newsletter_subscribers
-  for insert with check (true);
-create policy "newsletter_admin_read" on public.newsletter_subscribers
-  for select using (public.is_admin());
-create policy "newsletter_admin_update" on public.newsletter_subscribers
-  for update using (public.is_admin()) with check (public.is_admin());
-create policy "newsletter_admin_delete" on public.newsletter_subscribers
-  for delete using (public.is_admin());
-
 -- ------------------------------------------------------------
 -- Grants
 -- ------------------------------------------------------------
@@ -964,8 +945,6 @@ grant select, insert, update, delete on public.profiles, public.addresses,
 
 grant select, insert, update on public.return_requests to authenticated;
 grant select, insert on public.audit_logs to authenticated;
-grant insert on public.newsletter_subscribers to anon, authenticated;
-grant select, update, delete on public.newsletter_subscribers to authenticated;
 
 grant usage, select on sequence public.order_number_seq to authenticated;
 
@@ -1034,5 +1013,11 @@ begin
     where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'audit_logs'
   ) then
     execute 'alter publication supabase_realtime add table public.audit_logs';
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'settings'
+  ) then
+    execute 'alter publication supabase_realtime add table public.settings';
   end if;
 end $$;

@@ -12,6 +12,7 @@ import {
 import Logo from '@/components/common/Logo'
 import MobileMenu from '@/components/common/MobileMenu'
 import HeaderSearch from '@/components/common/HeaderSearch'
+import ThemeToggle from '@/components/common/ThemeToggle'
 import Avatar from '@/components/common/Avatar'
 import { useAuth } from '@/context/AuthContext'
 import { useCartDrawerStore } from '@/store/cartDrawerStore'
@@ -62,7 +63,7 @@ export default function Header() {
                 to={link.to}
                 className={cn(
                   'rounded-pill px-3.5 py-2 text-[13px] font-medium transition-colors',
-                  isActive(link) ? 'bg-slate-200 text-ink' : 'text-muted hover:text-ink',
+                  isActive(link) ? 'bg-ink/[0.07] text-ink' : 'text-muted hover:text-ink',
                 )}
               >
                 {link.label}
@@ -85,6 +86,8 @@ export default function Header() {
             >
               {mobileSearchOpen ? <X size={19} /> : <Search size={19} />}
             </button>
+
+            <ThemeToggle className="hidden sm:inline-flex" />
 
             {isAdmin && (
               <Link

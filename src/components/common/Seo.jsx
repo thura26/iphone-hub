@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
+import { useSiteSettings } from '@/context/SiteSettingsContext'
+import { formatMMK } from '@/lib/utils'
 
 const SITE_NAME = 'iPhone Hub'
 const DEFAULT_TITLE = 'iPhone Hub — Premium iPhones & Accessories in Myanmar'
-const DEFAULT_DESCRIPTION =
-  'Shop the latest iPhone 18, iPhone 17 and iPhone Air with genuine accessories at iPhone Hub. Free delivery over Ks 5,000,000, 7-day returns and 1-year warranty across Myanmar.'
 
 function setMeta(attribute, key, content) {
   let element = document.head.querySelector(`meta[${attribute}="${key}"]`)
@@ -36,7 +36,7 @@ function absoluteUrl(value) {
 
 export default function Seo({
   title,
-  description = DEFAULT_DESCRIPTION,
+  description,
   image = '/og-image.png',
   url,
   type = 'website',
@@ -44,6 +44,14 @@ export default function Seo({
   jsonLd = null,
   keywords,
 }) {
+  const { shipping } = useSiteSettings()
+  const freeThreshold = Number(shipping.free_threshold) || 0
+  const defaultDescription = `Shop the latest iPhone 18, iPhone 17 and iPhone Air with genuine accessories at iPhone Hub. ${
+    freeThreshold > 0
+      ? `Free delivery over ${formatMMK(freeThreshold)}`
+      : 'Free delivery on every order'
+  }, 7-day returns and 1-year warranty across Myanmar.`
+  const metaDescription = description || defaultDescription
   const jsonLdString = jsonLd ? JSON.stringify(jsonLd) : null
 
   useEffect(() => {
@@ -56,20 +64,20 @@ export default function Seo({
     const imageUrl = absoluteUrl(image) || absoluteUrl('/og-image.png')
 
     document.title = fullTitle
-    setMeta('name', 'description', description)
+    setMeta('name', 'description', metaDescription)
     setMeta('name', 'robots', noindex ? 'noindex, nofollow' : 'index, follow')
     setMeta('name', 'keywords', keywords)
     setMeta('property', 'og:site_name', SITE_NAME)
     setMeta('property', 'og:type', type)
     setMeta('property', 'og:title', fullTitle)
-    setMeta('property', 'og:description', description)
+    setMeta('property', 'og:description', metaDescription)
     setMeta('property', 'og:url', canonical)
     setMeta('property', 'og:image', imageUrl)
     setMeta('property', 'og:image:width', '1200')
     setMeta('property', 'og:image:height', '630')
     setMeta('name', 'twitter:card', 'summary_large_image')
     setMeta('name', 'twitter:title', fullTitle)
-    setMeta('name', 'twitter:description', description)
+    setMeta('name', 'twitter:description', metaDescription)
     setMeta('name', 'twitter:image', imageUrl)
     setLink('canonical', canonical)
 
@@ -81,9 +89,9 @@ export default function Seo({
       script.textContent = jsonLdString
       document.head.appendChild(script)
     }
-  }, [title, description, image, url, type, noindex, keywords, jsonLdString])
+  }, [title, metaDescription, image, url, type, noindex, keywords, jsonLdString])
 
   return null
 }
 
-export { DEFAULT_DESCRIPTION, DEFAULT_TITLE }
+export { DEFAULT_TITLE }

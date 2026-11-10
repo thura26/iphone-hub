@@ -15,6 +15,7 @@ import {
 import { toast } from 'sonner'
 import { supabase } from '@/supabaseClient'
 import { useAuth } from '@/context/AuthContext'
+import { useSiteSettings } from '@/context/SiteSettingsContext'
 import { useCartStore } from '@/store/cartStore'
 import { useCartDrawerStore } from '@/store/cartDrawerStore'
 import { useWishlist } from '@/hooks/useWishlist'
@@ -109,6 +110,7 @@ export default function ProductDetail() {
   const { slug } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { shipping } = useSiteSettings()
   const addItem = useCartStore((state) => state.addItem)
   const openCart = useCartDrawerStore((state) => state.openCart)
   const { has, toggle } = useWishlist()
@@ -216,6 +218,17 @@ export default function ProductDetail() {
     new Set([selectedVariant?.image, ...(product.images || [])].filter(Boolean)),
   )
   const canBuy = Boolean(selectedVariant) && stock > 0
+  const freeThreshold = Number(shipping.free_threshold) || 0
+  const expressFee = Number(shipping.express) || 0
+  const deliveryNote =
+    freeThreshold > 0
+      ? `Standard delivery takes 2–4 business days and is free on orders over ${formatMMK(freeThreshold)}.`
+      : 'Standard delivery takes 2–4 business days and is free on every order.'
+  const expressNote =
+    expressFee > 0
+      ? `Express delivery arrives next business day for ${formatMMK(expressFee)}.`
+      : 'Express delivery arrives next business day, free of charge.'
+  const deliveryFaq = `${deliveryNote} ${expressNote} Returns accepted within 7 days for unused items in original packaging.`
 
   const productJsonLd = {
     '@context': 'https://schema.org',
@@ -352,7 +365,12 @@ export default function ProductDetail() {
               </span>
             )}
           </div>
-          <p className="mt-1 text-xs text-muted">Inclusive of all taxes. Free standard delivery over Ks 5,000,000.</p>
+          <p className="mt-1 text-xs text-muted">
+            Inclusive of all taxes.{' '}
+            {freeThreshold > 0
+              ? `Free standard delivery over ${formatMMK(freeThreshold)}.`
+              : 'Free standard delivery on every order.'}
+          </p>
 
           <div className="mt-7">
             <VariantSelector variants={variants} selected={selectedVariant} onChange={setSelectedVariant} />
@@ -443,7 +461,7 @@ export default function ProductDetail() {
             {[
               {
                 title: 'Delivery & returns',
-                body: 'Standard delivery takes 2–4 business days and is free on orders over Ks 5,000,000. Express delivery arrives next business day for Ks 15,000. Returns accepted within 7 days for unused items in original packaging.',
+                body: deliveryFaq,
               },
               {
                 title: 'Warranty',

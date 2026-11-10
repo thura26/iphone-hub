@@ -19,7 +19,6 @@ const entityTypes = [
   { value: 'banner', label: 'Banners' },
   { value: 'review', label: 'Reviews' },
   { value: 'settings', label: 'Settings' },
-  { value: 'newsletter', label: 'Newsletter' },
 ]
 
 function humanizeAction(action = '') {

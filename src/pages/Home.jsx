@@ -14,6 +14,7 @@ import ProductCard from '@/components/product/ProductCard'
 import Loader from '@/components/common/Loader'
 import Reveal from '@/components/common/Reveal'
 import Seo from '@/components/common/Seo'
+import { useSiteSettings } from '@/context/SiteSettingsContext'
 import { fetchBanners, fetchProducts } from '@/lib/api'
 import { formatMMK } from '@/lib/utils'
 
@@ -25,9 +26,11 @@ const perks = [
 ]
 
 export default function Home() {
+  const { shipping } = useSiteSettings()
   const [products, setProducts] = useState([])
   const [banners, setBanners] = useState([])
   const [loading, setLoading] = useState(true)
+  const freeShippingLabel = formatMMK(Number(shipping.free_threshold) || 0)
 
   useEffect(() => {
     let active = true
@@ -78,7 +81,7 @@ export default function Home() {
     <div>
       <Seo
         title="iPhone Hub — Premium iPhones & Accessories in Myanmar"
-        description="Shop the latest iPhone 18 Pro, iPhone Air and genuine Apple accessories at iPhone Hub. Free delivery over Ks 5,000,000, 7-day returns and 1-year warranty across Myanmar."
+        description={`Shop the latest iPhone 18 Pro, iPhone Air and genuine Apple accessories at iPhone Hub. Free delivery over ${freeShippingLabel}, 7-day returns and 1-year warranty across Myanmar.`}
         url="/"
         keywords="iPhone Myanmar, buy iPhone Yangon, iPhone 18 Pro price, Apple accessories Myanmar"
       />
@@ -120,7 +123,7 @@ export default function Home() {
 
           <Link
             to={secondaryBanner?.cta_link || '/product/iphone-air'}
-            className="group relative flex min-h-[200px] flex-col overflow-hidden rounded-[28px] border border-line bg-gradient-to-br from-[#eef6fb] to-[#dfedf7] p-6 text-ink sm:min-h-[220px] lg:min-h-0"
+            className="group relative flex min-h-[200px] flex-col overflow-hidden rounded-[28px] border border-line bg-gradient-to-br from-[#eef6fb] to-[#dfedf7] p-6 text-ink dark:from-[#101820] dark:via-[#0d141b] dark:to-[#0b1016] sm:min-h-[220px] lg:min-h-0"
           >
             <div className="relative z-10">
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand">

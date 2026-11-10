@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/supabaseClient'
+import { useSiteSettings } from '@/context/SiteSettingsContext'
 import { formatMMK } from '@/lib/utils'
 import Loader from '@/components/common/Loader'
 
@@ -33,6 +34,7 @@ const defaultShipping = {
 }
 
 export default function AdminSettings() {
+  const { refresh } = useSiteSettings()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [store, setStore] = useState(defaultStore)
@@ -131,7 +133,8 @@ export default function AdminSettings() {
       )
       if (error) throw error
       setLastUpdated(now)
-      toast.success('Store settings saved')
+      await refresh()
+      toast.success('Store settings saved — the storefront is updated')
     } catch (error) {
       console.error(error)
       toast.error(error.message || 'Could not save settings')
@@ -149,7 +152,8 @@ export default function AdminSettings() {
           <p className="eyebrow">Configuration</p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Settings</h1>
           <p className="mt-1 text-sm text-muted">
-            Store identity and delivery pricing used across the storefront and checkout.
+            Store identity and delivery pricing used across the storefront and checkout. Changes
+            appear on the live site immediately.
           </p>
         </div>
         <button type="submit" disabled={saving} className="btn-primary btn-sm">
@@ -387,7 +391,8 @@ export default function AdminSettings() {
             <p className="font-semibold text-ink">About settings</p>
             <p className="mt-1.5">
               Values are stored as JSON in the Supabase <span className="font-mono">settings</span>{' '}
-              table. The shipping rates here feed the checkout totals.
+              table. The store profile feeds the header, footer, contact page and invoices, while
+              the shipping rates feed checkout totals and the announcement bar.
             </p>
             {lastUpdated && (
               <p className="mt-2 text-[10px]">

@@ -7,8 +7,9 @@ import Loader from '@/components/common/Loader'
 import EmptyState from '@/components/common/EmptyState'
 import Seo from '@/components/common/Seo'
 import Select from '@/components/common/Select'
+import { useSiteSettings } from '@/context/SiteSettingsContext'
 import { fetchCategories, fetchProducts, minVariantPrice } from '@/lib/api'
-import { cn } from '@/lib/utils'
+import { cn, formatMMK } from '@/lib/utils'
 
 const priceRanges = [
   { value: 'all', label: 'All prices', test: () => true },
@@ -27,6 +28,7 @@ const sortOptions = [
 ]
 
 export default function Shop() {
+  const { shipping } = useSiteSettings()
   const [searchParams, setSearchParams] = useSearchParams()
   const categorySlug = searchParams.get('category') || 'all'
   const queryParam = searchParams.get('q') || ''
@@ -117,7 +119,7 @@ export default function Shop() {
         description={
           activeCategory
             ? `Shop genuine ${activeCategory.name} at iPhone Hub. Flexible storage, colors and local warranty with delivery across Myanmar.`
-            : 'Browse every iPhone and Apple accessory at iPhone Hub. Compare prices in MMK, check stock, and enjoy free delivery over Ks 5,000,000.'
+            : `Browse every iPhone and Apple accessory at iPhone Hub. Compare prices in MMK, check stock, and enjoy free delivery over ${formatMMK(Number(shipping.free_threshold) || 0)}.`
         }
         url={activeCategory ? `/shop?category=${activeCategory.slug}` : '/shop'}
         noindex={Boolean(queryParam)}

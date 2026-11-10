@@ -5,7 +5,6 @@ import {
   Image,
   LayoutDashboard,
   LogOut,
-  Mail,
   Menu,
   Package,
   RotateCcw,
@@ -24,8 +23,10 @@ import { supabase } from '@/supabaseClient'
 import { subscribeToTable } from '@/lib/realtime'
 import { useAuth } from '@/context/AuthContext'
 import { useConfirm } from '@/context/ConfirmContext'
+import { useSiteSettings } from '@/context/SiteSettingsContext'
 import Avatar from '@/components/common/Avatar'
 import Loader from '@/components/common/Loader'
+import ThemeToggle from '@/components/common/ThemeToggle'
 import { cn } from '@/lib/utils'
 
 const links = [
@@ -38,13 +39,13 @@ const links = [
   { to: '/admin/banners', label: 'Banners', icon: Image },
   { to: '/admin/reviews', label: 'Reviews', icon: Star },
   { to: '/admin/coupons', label: 'Coupons', icon: TicketPercent },
-  { to: '/admin/newsletter', label: 'Newsletter', icon: Mail },
   { to: '/admin/audit-log', label: 'Audit log', icon: ScrollText },
   { to: '/admin/settings', label: 'Settings', icon: Settings },
 ]
 
 export default function AdminLayout() {
   const { profile, user, displayName, signOut } = useAuth()
+  const { store } = useSiteSettings()
   const confirm = useConfirm()
   const navigate = useNavigate()
   const location = useLocation()
@@ -124,7 +125,7 @@ export default function AdminLayout() {
               <Store size={17} strokeWidth={2.4} />
             </span>
             <span>
-              <span className="block text-[15px] font-bold leading-tight tracking-tight text-ink">iPhone Hub</span>
+              <span className="block text-[15px] font-bold leading-tight tracking-tight text-ink">{store.name}</span>
               <span className="block text-[9px] font-bold uppercase tracking-[0.18em] text-brand">Admin</span>
             </span>
           </Link>
@@ -202,9 +203,10 @@ export default function AdminLayout() {
           </button>
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">Store administration</p>
-            <p className="text-sm font-bold text-ink">iPhone Hub</p>
+            <p className="text-sm font-bold text-ink">{store.name}</p>
           </div>
           <div className="ml-auto flex items-center gap-1">
+            <ThemeToggle />
             <Link to="/" className="btn-icon" aria-label="View storefront">
               <ExternalLink size={18} />
             </Link>
