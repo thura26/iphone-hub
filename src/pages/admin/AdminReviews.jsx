@@ -210,7 +210,13 @@ export default function AdminReviews() {
                 <div className="mt-3 flex items-center gap-2">
                   {productImage ? (
                     <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-soft">
-                      <img src={productImage} alt="" className="h-full w-full object-contain p-0.5" />
+                      <img
+                        src={productImage}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-contain p-0.5"
+                      />
                     </span>
                   ) : (
                     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-soft text-muted">

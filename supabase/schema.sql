@@ -199,16 +199,63 @@ create table if not exists public.coupons (
   value numeric(12,2) not null default 0,
   min_spend numeric(12,2) not null default 0,
   usage_limit integer,
+  per_user_limit integer,
   used_count integer not null default 0,
   expires_at timestamptz,
   active boolean not null default true,
   created_at timestamptz not null default now()
 );
 
+-- Add columns introduced after the first release.
+alter table public.coupons add column if not exists per_user_limit integer;
+
 create table if not exists public.settings (
   key text primary key,
   value jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now()
+);
+
+-- ------------------------------------------------------------
+-- Returns, audit log, newsletter
+-- ------------------------------------------------------------
+create table if not exists public.return_requests (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null unique references public.orders(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  reason text not null,
+  details text,
+  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected', 'refunded')),
+  admin_note text,
+  refund_amount numeric(12,2),
+  resolved_by uuid references auth.users(id) on delete set null,
+  resolved_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists return_requests_user_idx on public.return_requests(user_id);
+create index if not exists return_requests_status_idx on public.return_requests(status);
+
+create table if not exists public.audit_logs (
+  id uuid primary key default gen_random_uuid(),
+  actor_id uuid references auth.users(id) on delete set null,
+  actor_name text,
+  actor_email text,
+  action text not null,
+  entity_type text not null,
+  entity_id text,
+  details jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists audit_logs_created_idx on public.audit_logs(created_at desc);
+
+create table if not exists public.newsletter_subscribers (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  source text not null default 'footer',
+  active boolean not null default true,
+  created_at timestamptz not null default now()
 );
 
 -- ------------------------------------------------------------
@@ -334,6 +381,10 @@ drop trigger if exists settings_updated_at on public.settings;
 create trigger settings_updated_at before update on public.settings
   for each row execute function public.set_updated_at();
 
+drop trigger if exists return_requests_updated_at on public.return_requests;
+create trigger return_requests_updated_at before update on public.return_requests
+  for each row execute function public.set_updated_at();
+
 -- ------------------------------------------------------------
 -- Order RPCs
 -- ------------------------------------------------------------
@@ -372,6 +423,7 @@ declare
   v_standard_fee numeric(12,2) := 0;
   v_free_threshold numeric(12,2) := 5000000;
   v_eta date;
+  v_used integer;
 begin
   if v_user is null then
     raise exception 'Please sign in before placing an order';
@@ -456,6 +508,19 @@ begin
       raise exception 'This coupon needs a minimum spend of %', v_coupon.min_spend;
     end if;
 
+    if v_coupon.per_user_limit is not null then
+      select count(*) into v_used
+        from public.orders
+       where user_id = v_user
+         and coupon_code is not null
+         and lower(coupon_code) = lower(v_coupon.code)
+         and status <> 'cancelled';
+
+      if v_used >= v_coupon.per_user_limit then
+        raise exception 'You have already used this coupon the maximum number of times';
+      end if;
+    end if;
+
     if v_coupon.type = 'percent' then
       v_discount := round(v_subtotal * v_coupon.value / 100, 2);
     else
@@ -535,6 +600,7 @@ as $$
 declare
   c public.coupons%rowtype;
   d numeric(12,2) := 0;
+  v_used integer;
 begin
   select * into c
     from public.coupons
@@ -553,6 +619,23 @@ begin
       'discount', 0,
       'message', 'Minimum spend is ' || to_char(c.min_spend, 'FM999,999,999') || ' Ks'
     );
+  end if;
+
+  if c.per_user_limit is not null and auth.uid() is not null then
+    select count(*) into v_used
+      from public.orders
+     where user_id = auth.uid()
+       and coupon_code is not null
+       and lower(coupon_code) = lower(c.code)
+       and status <> 'cancelled';
+
+    if v_used >= c.per_user_limit then
+      return jsonb_build_object(
+        'valid', false,
+        'discount', 0,
+        'message', 'You have already used this coupon the maximum number of times'
+      );
+    end if;
   end if;
 
   if c.type = 'percent' then
@@ -655,10 +738,64 @@ begin
 end;
 $$;
 
+create or replace function public.resolve_return_request(
+  p_id uuid,
+  p_status text,
+  p_admin_note text default null,
+  p_refund_amount numeric default null
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  r public.return_requests%rowtype;
+  v_order_total numeric(12,2);
+begin
+  if not public.is_admin() then
+    raise exception 'Admin access required';
+  end if;
+
+  if p_status not in ('approved', 'rejected', 'refunded') then
+    raise exception 'Invalid return status';
+  end if;
+
+  select * into r from public.return_requests where id = p_id for update;
+
+  if not found then
+    raise exception 'Return request not found';
+  end if;
+
+  if r.status in ('rejected', 'refunded') then
+    raise exception 'This return request is already closed';
+  end if;
+
+  select total_amount into v_order_total from public.orders where id = r.order_id;
+
+  update public.return_requests
+     set status = p_status,
+         admin_note = coalesce(nullif(trim(p_admin_note), ''), admin_note),
+         refund_amount = case
+           when p_status in ('approved', 'refunded')
+             then coalesce(p_refund_amount, refund_amount, v_order_total)
+           else refund_amount
+         end,
+         resolved_by = auth.uid(),
+         resolved_at = case when p_status in ('rejected', 'refunded') then now() else resolved_at end
+   where id = p_id;
+
+  if p_status = 'refunded' then
+    update public.orders set payment_status = 'refunded' where id = r.order_id;
+  end if;
+end;
+$$;
+
 grant execute on function public.create_order(jsonb, text, text, text, text, text, text, text, text, text, text) to authenticated;
 grant execute on function public.validate_coupon(text, numeric) to authenticated, anon;
 grant execute on function public.cancel_order(uuid) to authenticated;
 grant execute on function public.update_order_status(uuid, text, text) to authenticated;
+grant execute on function public.resolve_return_request(uuid, text, text, numeric) to authenticated;
 grant execute on function public.is_admin() to anon, authenticated;
 
 -- ------------------------------------------------------------
@@ -679,6 +816,9 @@ alter table public.reviews enable row level security;
 alter table public.banners enable row level security;
 alter table public.coupons enable row level security;
 alter table public.settings enable row level security;
+alter table public.return_requests enable row level security;
+alter table public.audit_logs enable row level security;
+alter table public.newsletter_subscribers enable row level security;
 
 -- Drop policies from earlier versions of this file.
 do $$
@@ -778,6 +918,36 @@ create policy "settings_public_read" on public.settings
 create policy "settings_admin_write" on public.settings
   for all using (public.is_admin()) with check (public.is_admin());
 
+-- Returns
+create policy "returns_select_own_or_admin" on public.return_requests
+  for select using (auth.uid() = user_id or public.is_admin());
+create policy "returns_insert_own" on public.return_requests
+  for insert with check (
+    auth.uid() = user_id
+    and exists (
+      select 1 from public.orders o
+      where o.id = order_id and o.user_id = auth.uid() and o.status = 'delivered'
+    )
+  );
+create policy "returns_admin_update" on public.return_requests
+  for update using (public.is_admin()) with check (public.is_admin());
+
+-- Audit log (admins read; entries are written by signed-in admins)
+create policy "audit_logs_admin_read" on public.audit_logs
+  for select using (public.is_admin());
+create policy "audit_logs_admin_insert" on public.audit_logs
+  for insert with check (public.is_admin());
+
+-- Newsletter (anyone can subscribe; admins manage the list)
+create policy "newsletter_public_insert" on public.newsletter_subscribers
+  for insert with check (true);
+create policy "newsletter_admin_read" on public.newsletter_subscribers
+  for select using (public.is_admin());
+create policy "newsletter_admin_update" on public.newsletter_subscribers
+  for update using (public.is_admin()) with check (public.is_admin());
+create policy "newsletter_admin_delete" on public.newsletter_subscribers
+  for delete using (public.is_admin());
+
 -- ------------------------------------------------------------
 -- Grants
 -- ------------------------------------------------------------
@@ -791,6 +961,11 @@ grant select, insert, update, delete on public.profiles, public.addresses,
   public.order_items, public.order_status_history, public.reviews,
   public.categories, public.products, public.product_variants,
   public.banners, public.coupons, public.settings to authenticated;
+
+grant select, insert, update on public.return_requests to authenticated;
+grant select, insert on public.audit_logs to authenticated;
+grant insert on public.newsletter_subscribers to anon, authenticated;
+grant select, update, delete on public.newsletter_subscribers to authenticated;
 
 grant usage, select on sequence public.order_number_seq to authenticated;
 
@@ -830,3 +1005,34 @@ drop policy if exists "product_images_admin_delete" on storage.objects;
 create policy "product_images_admin_delete"
   on storage.objects for delete
   using (bucket_id = 'product-images' and public.is_admin());
+
+-- ------------------------------------------------------------
+-- Realtime
+-- ------------------------------------------------------------
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'orders'
+  ) then
+    execute 'alter publication supabase_realtime add table public.orders';
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'order_status_history'
+  ) then
+    execute 'alter publication supabase_realtime add table public.order_status_history';
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'return_requests'
+  ) then
+    execute 'alter publication supabase_realtime add table public.return_requests';
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'audit_logs'
+  ) then
+    execute 'alter publication supabase_realtime add table public.audit_logs';
+  end if;
+end $$;

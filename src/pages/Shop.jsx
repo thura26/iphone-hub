@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import ProductCard from '@/components/product/ProductCard'
 import Loader from '@/components/common/Loader'
 import EmptyState from '@/components/common/EmptyState'
+import Seo from '@/components/common/Seo'
 import Select from '@/components/common/Select'
 import { fetchCategories, fetchProducts, minVariantPrice } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -111,6 +112,21 @@ export default function Shop() {
 
   return (
     <div className="wrap py-6 sm:py-9">
+      <Seo
+        title={activeCategory ? `${activeCategory.name} in Myanmar` : 'Shop all iPhones & accessories'}
+        description={
+          activeCategory
+            ? `Shop genuine ${activeCategory.name} at iPhone Hub. Flexible storage, colors and local warranty with delivery across Myanmar.`
+            : 'Browse every iPhone and Apple accessory at iPhone Hub. Compare prices in MMK, check stock, and enjoy free delivery over Ks 5,000,000.'
+        }
+        url={activeCategory ? `/shop?category=${activeCategory.slug}` : '/shop'}
+        noindex={Boolean(queryParam)}
+        keywords={
+          activeCategory
+            ? `${activeCategory.name} Myanmar, buy ${activeCategory.name} Yangon`
+            : 'buy iPhone Myanmar, iPhone prices Yangon, Apple accessories'
+        }
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="eyebrow">iPhone Hub</p>

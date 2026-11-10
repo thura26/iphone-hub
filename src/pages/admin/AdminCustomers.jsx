@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, ShieldCheck, UserPlus, Users, Wallet } from 'lucide-react'
+import { Download, Search, ShieldCheck, UserPlus, Users, Wallet } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/supabaseClient'
-import { formatDate, formatMMK, initials } from '@/lib/utils'
+import { dateStamp, downloadCsv } from '@/lib/csv'
+import { formatDate, formatDateTime, formatMMK, initials } from '@/lib/utils'
 import StatCard from '@/components/admin/StatCard'
 import Loader from '@/components/common/Loader'
 import EmptyState from '@/components/common/EmptyState'
@@ -61,6 +62,27 @@ export default function AdminCustomers() {
     )
   }, [customers, search])
 
+  const exportCustomers = () => {
+    if (filtered.length === 0) {
+      toast.info('There are no customers in this view to export')
+      return
+    }
+    downloadCsv(
+      `customers-${dateStamp()}.csv`,
+      [
+        { label: 'Name', value: (customer) => customer.full_name || '' },
+        { label: 'Email', value: (customer) => customer.email || '' },
+        { label: 'Phone', value: (customer) => customer.phone || '' },
+        { label: 'Role', value: (customer) => customer.role },
+        { label: 'Joined at', value: (customer) => formatDateTime(customer.created_at) },
+        { label: 'Orders', value: (customer) => customer.orderCount },
+        { label: 'Total spent (MMK)', value: (customer) => customer.spent },
+      ],
+      filtered,
+    )
+    toast.success(`Exported ${filtered.length} customer${filtered.length === 1 ? '' : 's'}`)
+  }
+
   if (loading) return <Loader label="Loading customers…" />
 
   const customerCount = profiles.filter((profile) => profile.role === 'customer').length
@@ -74,10 +96,16 @@ export default function AdminCustomers() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <p className="eyebrow">People</p>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Customers</h1>
-        <p className="mt-1 text-sm text-muted">Accounts registered on iPhone Hub.</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="eyebrow">People</p>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Customers</h1>
+          <p className="mt-1 text-sm text-muted">Accounts registered on iPhone Hub.</p>
+        </div>
+        <button type="button" onClick={exportCustomers} className="btn-outline btn-sm">
+          <Download size={14} />
+          Export CSV
+        </button>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

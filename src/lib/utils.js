@@ -92,6 +92,26 @@ export const ORDER_STATUS_META = {
   cancelled: { label: 'Cancelled', tone: 'danger' },
 }
 
+export const RETURN_STATUS_META = {
+  pending: { label: 'Pending review', tone: 'badge-warning' },
+  approved: { label: 'Approved', tone: 'badge-success' },
+  rejected: { label: 'Rejected', tone: 'badge-danger' },
+  refunded: { label: 'Refunded', tone: 'badge-brand' },
+}
+
+export const RETURN_REASONS = [
+  { value: 'damaged_on_arrival', label: 'Damaged on arrival' },
+  { value: 'defective', label: 'Defective or not working' },
+  { value: 'wrong_item', label: 'Received the wrong item' },
+  { value: 'not_as_described', label: 'Not as described' },
+  { value: 'changed_mind', label: 'Changed my mind' },
+  { value: 'other', label: 'Other reason' },
+]
+
+export function returnReasonLabel(value) {
+  return RETURN_REASONS.find((reason) => reason.value === value)?.label || value || '—'
+}
+
 export function cartLineKey(variantId) {
   return `variant:${variantId}`
 }

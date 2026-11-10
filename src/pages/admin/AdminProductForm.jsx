@@ -503,7 +503,13 @@ export default function AdminProductForm() {
               <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-5">
                 {form.images.map((image) => (
                   <div key={image} className="group relative aspect-square overflow-hidden rounded-xl border border-line bg-soft">
-                    <img src={image} alt="" className="h-full w-full object-contain p-1.5" />
+                        <img
+                          src={image}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          className="h-full w-full object-contain p-1.5"
+                        />
                     <button
                       type="button"
                       onClick={() => removeImage(image)}

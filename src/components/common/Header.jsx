@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import {
   Heart,
   LayoutDashboard,
@@ -7,9 +7,11 @@ import {
   Search,
   ShoppingBag,
   UserRound,
+  X,
 } from 'lucide-react'
 import Logo from '@/components/common/Logo'
 import MobileMenu from '@/components/common/MobileMenu'
+import HeaderSearch from '@/components/common/HeaderSearch'
 import Avatar from '@/components/common/Avatar'
 import { useAuth } from '@/context/AuthContext'
 import { useCartDrawerStore } from '@/store/cartDrawerStore'
@@ -28,13 +30,12 @@ const navLinks = [
 export default function Header() {
   const { user, profile, isAdmin } = useAuth()
   const openCart = useCartDrawerStore((state) => state.openCart)
-  const navigate = useNavigate()
   const location = useLocation()
   const items = useCartStore((state) => state.items)
   const wishlistIds = useWishlistStore((state) => state.ids)
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
-  const [search, setSearch] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
 
   const currentCategory = new URLSearchParams(location.search).get('category')
 
@@ -46,13 +47,6 @@ export default function Header() {
       return location.pathname === '/shop' && !currentCategory
     }
     return location.pathname === link.to
-  }
-
-  const submitSearch = (event) => {
-    event.preventDefault()
-    const query = search.trim()
-    navigate(query ? `/shop?q=${encodeURIComponent(query)}` : '/shop')
-    setSearch('')
   }
 
   return (
@@ -76,23 +70,21 @@ export default function Header() {
             ))}
           </nav>
 
-          <form onSubmit={submitSearch} className="ml-auto hidden md:block">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-              <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search iPhones, accessories…"
-                className="h-10 w-48 rounded-pill border border-line bg-soft/70 pl-9 pr-4 text-sm text-ink outline-none transition-all placeholder:text-muted focus:w-64 focus:border-brand focus:bg-surface"
-                aria-label="Search products"
-              />
-            </div>
-          </form>
+          <HeaderSearch
+            className="ml-auto hidden w-48 transition-[width] duration-200 focus-within:w-64 md:block"
+            ariaLabel="Search products"
+          />
 
           <div className="ml-auto flex items-center gap-0.5 md:ml-0">
-            <Link to="/shop" className="btn-icon md:hidden" aria-label="Search">
-              <Search size={19} />
-            </Link>
+            <button
+              type="button"
+              onClick={() => setMobileSearchOpen((current) => !current)}
+              className="btn-icon md:hidden"
+              aria-label={mobileSearchOpen ? 'Close search' : 'Search'}
+              aria-expanded={mobileSearchOpen}
+            >
+              {mobileSearchOpen ? <X size={19} /> : <Search size={19} />}
+            </button>
 
             {isAdmin && (
               <Link
@@ -162,6 +154,16 @@ export default function Header() {
             </button>
           </div>
         </div>
+
+        {mobileSearchOpen && (
+          <div className="border-t border-line bg-surface px-4 py-2.5 md:hidden">
+            <HeaderSearch
+              autoFocus
+              onNavigate={() => setMobileSearchOpen(false)}
+              ariaLabel="Search products on mobile"
+            />
+          </div>
+        )}
       </header>
 
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />

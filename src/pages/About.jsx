@@ -7,6 +7,7 @@ import {
   Truck,
 } from 'lucide-react'
 import Reveal from '@/components/common/Reveal'
+import Seo from '@/components/common/Seo'
 
 const stats = [
   { value: '10k+', label: 'Orders delivered' },
@@ -48,6 +49,12 @@ const milestones = [
 export default function About() {
   return (
     <div className="pb-2">
+      <Seo
+        title="About us"
+        description="iPhone Hub makes buying a premium iPhone in Myanmar feel premium: genuine Apple devices, honest MMK pricing, tracked delivery and real local support."
+        url="/about"
+        keywords="iPhone Hub Myanmar, genuine iPhone store Yangon, Apple reseller Myanmar"
+      />
       <section className="wrap pt-6 sm:pt-9">
         <div className="grid items-center gap-8 lg:grid-cols-2">
           <Reveal>
@@ -80,6 +87,8 @@ export default function About() {
               <img
                 src="/images/products/iphone-18-pro-glacier.webp"
                 alt="iPhone 18 Pro in Glacier"
+                loading="lazy"
+                decoding="async"
                 className="relative mx-auto h-[300px] w-auto object-contain drop-shadow-[0_30px_45px_rgba(16,24,40,0.22)] sm:h-[360px]"
               />
               <div className="relative mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/70 bg-surface/85 px-4 py-3 backdrop-blur">

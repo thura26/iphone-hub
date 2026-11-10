@@ -203,6 +203,8 @@ export default function CartDrawer() {
                         <img
                           src={item.image}
                           alt={item.productName}
+                          loading="lazy"
+                          decoding="async"
                           className="h-full w-full object-contain p-1.5"
                         />
                       ) : (

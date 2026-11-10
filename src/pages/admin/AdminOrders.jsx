@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronRight, Search, ShoppingCart } from 'lucide-react'
+import { ChevronRight, Download, Search, ShoppingCart } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/supabaseClient'
-import { formatDate, formatMMK } from '@/lib/utils'
+import useRealtime from '@/hooks/useRealtime'
+import { dateStamp, downloadCsv } from '@/lib/csv'
+import { formatDate, formatDateTime, formatMMK } from '@/lib/utils'
 import StatusBadge from '@/components/common/StatusBadge'
 import Loader from '@/components/common/Loader'
 import EmptyState from '@/components/common/EmptyState'
@@ -31,22 +33,22 @@ export default function AdminOrders() {
   const [status, setStatus] = useState('all')
   const [search, setSearch] = useState('')
 
-  useEffect(() => {
-    let active = true
-    supabase
+  const loadOrders = async () => {
+    const { data, error } = await supabase
       .from('orders')
       .select('*, order_items(*)')
       .order('created_at', { ascending: false })
-      .then(({ data, error }) => {
-        if (!active) return
-        if (error) toast.error(error.message)
-        setOrders(data || [])
-        setLoading(false)
-      })
-    return () => {
-      active = false
-    }
+    if (error) toast.error(error.message)
+    setOrders(data || [])
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    loadOrders()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useRealtime({ table: 'orders', onChange: loadOrders })
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -58,6 +60,40 @@ export default function AdminOrders() {
         .includes(term)
     })
   }, [orders, status, search])
+
+  const exportOrders = () => {
+    if (filtered.length === 0) {
+      toast.info('There are no orders in this view to export')
+      return
+    }
+    downloadCsv(
+      `orders-${dateStamp()}.csv`,
+      [
+        { label: 'Order number', value: (order) => order.order_number },
+        { label: 'Placed at', value: (order) => formatDateTime(order.created_at) },
+        { label: 'Customer', value: (order) => order.customer_name || '' },
+        { label: 'Email', value: (order) => order.customer_email || '' },
+        { label: 'Phone', value: (order) => order.customer_phone || '' },
+        { label: 'Status', value: (order) => order.status },
+        { label: 'Payment method', value: (order) => paymentLabel[order.payment_method] || order.payment_method },
+        { label: 'Payment status', value: (order) => order.payment_status },
+        {
+          label: 'Items',
+          value: (order) =>
+            (order.order_items || [])
+              .map((item) => `${item.product_name} x${item.quantity}`)
+              .join('; '),
+        },
+        { label: 'Subtotal (MMK)', value: (order) => order.subtotal },
+        { label: 'Shipping (MMK)', value: (order) => order.shipping_fee },
+        { label: 'Discount (MMK)', value: (order) => order.discount },
+        { label: 'Total (MMK)', value: (order) => order.total_amount },
+        { label: 'Coupon', value: (order) => order.coupon_code || '' },
+      ],
+      filtered,
+    )
+    toast.success(`Exported ${filtered.length} order${filtered.length === 1 ? '' : 's'}`)
+  }
 
   if (loading) return <Loader label="Loading orders…" />
 
@@ -75,19 +111,29 @@ export default function AdminOrders() {
         <div>
           <p className="eyebrow">Fulfilment</p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Orders</h1>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted">
             {orders.filter((order) => order.status === 'pending').length} pending · {orders.length} total orders
+            <span className="inline-flex items-center gap-1.5 rounded-pill bg-success/10 px-2 py-0.5 text-[10px] font-semibold text-success">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
+              Live
+            </span>
           </p>
         </div>
-        <div className="text-right">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Revenue</p>
-          <p className="text-lg font-bold text-ink">
-            {formatMMK(
-              orders
-                .filter((order) => order.status !== 'cancelled')
-                .reduce((sum, order) => sum + Number(order.total_amount), 0),
-            )}
-          </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="text-right">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Revenue</p>
+            <p className="text-lg font-bold text-ink">
+              {formatMMK(
+                orders
+                  .filter((order) => order.status !== 'cancelled')
+                  .reduce((sum, order) => sum + Number(order.total_amount), 0),
+              )}
+            </p>
+          </div>
+          <button type="button" onClick={exportOrders} className="btn-outline btn-sm">
+            <Download size={14} />
+            Export CSV
+          </button>
         </div>
       </div>
 

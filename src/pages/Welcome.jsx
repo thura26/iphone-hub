@@ -75,6 +75,8 @@ export default function Welcome() {
               <img
                 src="/images/hero/iphone-18-pro-hero.webp"
                 alt="iPhone 18 Pro"
+                fetchPriority="high"
+                decoding="async"
                 className="aspect-[4/5] w-full rounded-[26px] object-cover"
               />
               <div className="absolute inset-x-0 bottom-0 rounded-b-[26px] bg-gradient-to-t from-black/80 to-transparent p-5 pt-16">

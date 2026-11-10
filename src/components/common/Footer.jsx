@@ -1,15 +1,37 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Mail, MapPin, Phone } from 'lucide-react'
+import { ArrowRight, Loader2, Mail, MapPin, Phone } from 'lucide-react'
 import { toast } from 'sonner'
+import { supabase } from '@/supabaseClient'
 import Logo from '@/components/common/Logo'
+
+const currentYear = new Date().getFullYear()
 
 export default function Footer() {
   const [email, setEmail] = useState('')
+  const [subscribing, setSubscribing] = useState(false)
 
-  const subscribe = (event) => {
+  const subscribe = async (event) => {
     event.preventDefault()
-    if (!email.trim()) return
+    const normalized = email.trim().toLowerCase()
+    if (!normalized) return
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+      toast.error('Please enter a valid email address')
+      return
+    }
+    setSubscribing(true)
+    const { error } = await supabase
+      .from('newsletter_subscribers')
+      .insert({ email: normalized, source: 'footer' })
+    setSubscribing(false)
+    if (error) {
+      toast.error(
+        error.code === '23505'
+          ? 'You are already on the list — thanks for sticking with us!'
+          : error.message,
+      )
+      return
+    }
     toast.success('Thanks for subscribing! Watch your inbox for new drops.')
     setEmail('')
   }
@@ -79,8 +101,13 @@ export default function Footer() {
                 className="min-w-0 flex-1 bg-transparent px-3 text-sm text-ink outline-none placeholder:text-muted"
                 aria-label="Email address"
               />
-              <button type="submit" className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ink text-surface" aria-label="Subscribe">
-                <ArrowRight size={15} />
+              <button
+                type="submit"
+                disabled={subscribing}
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ink text-surface disabled:opacity-60"
+                aria-label="Subscribe to the newsletter"
+              >
+                {subscribing ? <Loader2 size={15} className="animate-spin" /> : <ArrowRight size={15} />}
               </button>
             </form>
             <div className="mt-5 space-y-2 text-sm text-muted">
@@ -92,7 +119,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 flex flex-col gap-4 border-t border-line pt-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} iPhone Hub. Developed by Thura Linn Thant.</p>
+          <p>© {currentYear} iPhone Hub. Developed by Thura Linn Thant.</p>
           <div className="flex items-center gap-2">
             {['VISA', 'Mastercard', 'Apple Pay', 'COD'].map((label) => (
               <span key={label} className="rounded-md border border-line bg-soft px-2.5 py-1 text-[10px] font-semibold text-muted">

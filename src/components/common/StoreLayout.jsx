@@ -1,8 +1,9 @@
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Header from '@/components/common/Header'
 import Footer from '@/components/common/Footer'
 import CartDrawer from '@/components/common/CartDrawer'
+import Loader from '@/components/common/Loader'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -21,7 +22,9 @@ export default function StoreLayout() {
       <Header />
       <main className="flex-1">
         <div key={pathname} className="page-enter">
-          <Outlet />
+          <Suspense fallback={<Loader label="Loading…" />}>
+            <Outlet />
+          </Suspense>
         </div>
       </main>
       <Footer />

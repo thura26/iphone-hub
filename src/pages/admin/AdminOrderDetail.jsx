@@ -2,11 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
+  Download,
+  Loader2,
   Mail,
   MapPin,
   PackageCheck,
   Phone,
   RefreshCw,
+  RotateCcw,
   Save,
   Truck,
   XCircle,
@@ -14,12 +17,17 @@ import {
 import { toast } from 'sonner'
 import { supabase } from '@/supabaseClient'
 import { useConfirm } from '@/context/ConfirmContext'
+import useRealtime from '@/hooks/useRealtime'
+import { logAudit } from '@/lib/audit'
+import { downloadInvoice } from '@/lib/invoice'
 import {
   formatDate,
   formatDateTime,
   formatMMK,
   ORDER_STATUS_META,
   PAYMENT_METHODS,
+  RETURN_STATUS_META,
+  returnReasonLabel,
 } from '@/lib/utils'
 import Loader from '@/components/common/Loader'
 import EmptyState from '@/components/common/EmptyState'
@@ -38,18 +46,30 @@ export default function AdminOrderDetail() {
   const [updating, setUpdating] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState('unpaid')
   const [savingPayment, setSavingPayment] = useState(false)
+  const [downloading, setDownloading] = useState(false)
+  const [returnRequest, setReturnRequest] = useState(null)
 
   const load = async () => {
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*, order_items(*), order_status_history(*)')
-      .eq('id', id)
-      .maybeSingle()
-    if (error) {
-      toast.error(error.message)
-      console.error(error)
+    const [orderResult, returnResult] = await Promise.all([
+      supabase
+        .from('orders')
+        .select('*, order_items(*), order_status_history(*)')
+        .eq('id', id)
+        .maybeSingle(),
+      supabase
+        .from('return_requests')
+        .select('*')
+        .eq('order_id', id)
+        .order('created_at', { ascending: false })
+        .limit(1),
+    ])
+    if (orderResult.error) {
+      toast.error(orderResult.error.message)
+      console.error(orderResult.error)
     }
+    const data = orderResult.data
     setOrder(data)
+    setReturnRequest(returnResult.data?.[0] || null)
     if (data) {
       setNextStatus(data.status)
       setPaymentStatus(data.payment_status)
@@ -61,6 +81,20 @@ export default function AdminOrderDetail() {
     load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
+
+  useRealtime({ table: 'orders', filter: `id=eq.${id}`, onChange: load, enabled: Boolean(id) })
+  useRealtime({
+    table: 'order_status_history',
+    filter: `order_id=eq.${id}`,
+    onChange: load,
+    enabled: Boolean(id),
+  })
+  useRealtime({
+    table: 'return_requests',
+    filter: `order_id=eq.${id}`,
+    onChange: load,
+    enabled: Boolean(id),
+  })
 
   const history = useMemo(
     () =>
@@ -98,12 +132,24 @@ export default function AdminOrderDetail() {
       return
     }
     toast.success('Order status updated')
+    void logAudit({
+      action: 'order.status_updated',
+      entityType: 'order',
+      entityId: order.id,
+      details: {
+        order_number: order.order_number,
+        from: order.status,
+        to: nextStatus,
+        note: note.trim() || null,
+      },
+    })
     setNote('')
     load()
   }
 
   const updatePayment = async () => {
     setSavingPayment(true)
+    const previous = order.payment_status
     const { error } = await supabase
       .from('orders')
       .update({ payment_status: paymentStatus })
@@ -114,7 +160,29 @@ export default function AdminOrderDetail() {
       return
     }
     toast.success('Payment status updated')
+    void logAudit({
+      action: 'order.payment_updated',
+      entityType: 'order',
+      entityId: order.id,
+      details: {
+        order_number: order.order_number,
+        from: previous,
+        to: paymentStatus,
+      },
+    })
     setOrder((current) => ({ ...current, payment_status: paymentStatus }))
+  }
+
+  const handleInvoice = async () => {
+    setDownloading(true)
+    try {
+      await downloadInvoice(order)
+    } catch (error) {
+      console.error(error)
+      toast.error('Could not generate the invoice')
+    } finally {
+      setDownloading(false)
+    }
   }
 
   if (loading) return <Loader label="Loading order…" />
@@ -148,9 +216,20 @@ export default function AdminOrderDetail() {
             </p>
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Order total</p>
-          <p className="text-xl font-bold text-ink">{formatMMK(order.total_amount)}</p>
+        <div className="flex flex-col items-end gap-2">
+          <div className="text-right">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Order total</p>
+            <p className="text-xl font-bold text-ink">{formatMMK(order.total_amount)}</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleInvoice}
+            disabled={downloading}
+            className="btn-outline btn-sm"
+          >
+            {downloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+            {downloading ? 'Preparing…' : 'Invoice PDF'}
+          </button>
         </div>
       </div>
 
@@ -166,7 +245,13 @@ export default function AdminOrderDetail() {
                 <li key={item.id} className="flex items-start gap-3 px-4 py-3">
                   <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-soft">
                     {item.image ? (
-                      <img src={item.image} alt="" className="h-full w-full object-contain p-1" />
+                      <img
+                        src={item.image}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-contain p-1"
+                      />
                     ) : (
                       <PackageCheck size={15} className="text-muted" />
                     )}
@@ -205,7 +290,13 @@ export default function AdminOrderDetail() {
                         <div className="flex items-center gap-2.5">
                           <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-soft">
                             {item.image ? (
-                              <img src={item.image} alt="" className="h-full w-full object-contain p-1" />
+                              <img
+                        src={item.image}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-contain p-1"
+                      />
                             ) : (
                               <PackageCheck size={14} className="text-muted" />
                             )}
@@ -387,6 +478,34 @@ export default function AdminOrderDetail() {
               </button>
             </div>
           </section>
+
+          {returnRequest && (
+            <section className="card p-4">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="flex items-center gap-2 text-sm font-bold text-ink">
+                  <RotateCcw size={14} />
+                  Return request
+                </h2>
+                <span className={RETURN_STATUS_META[returnRequest.status]?.tone || 'badge-neutral'}>
+                  {RETURN_STATUS_META[returnRequest.status]?.label || returnRequest.status}
+                </span>
+              </div>
+              <p className="mt-2 text-xs text-muted">
+                {returnReasonLabel(returnRequest.reason)}
+              </p>
+              {returnRequest.details && (
+                <p className="mt-2 rounded-lg bg-soft px-2.5 py-2 text-[11px] leading-relaxed text-muted">
+                  {returnRequest.details}
+                </p>
+              )}
+              <p className="mt-2 text-[10px] text-muted">
+                Requested {formatDateTime(returnRequest.created_at)}
+              </p>
+              <Link to="/admin/returns" className="btn-outline btn-sm mt-3 w-full">
+                Manage in Returns
+              </Link>
+            </section>
+          )}
         </aside>
       </div>
     </div>

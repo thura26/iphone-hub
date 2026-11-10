@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronRight, PackageCheck, Truck } from 'lucide-react'
+import { ChevronRight, Download, PackageCheck, Truck, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/supabaseClient'
+import { useAuth } from '@/context/AuthContext'
 import { useConfirm } from '@/context/ConfirmContext'
+import useRealtime from '@/hooks/useRealtime'
+import { downloadInvoice } from '@/lib/invoice'
 import { formatDate, formatMMK } from '@/lib/utils'
 import Loader from '@/components/common/Loader'
 import EmptyState from '@/components/common/EmptyState'
+import Seo from '@/components/common/Seo'
 import StatusBadge from '@/components/common/StatusBadge'
 import { cn } from '@/lib/utils'
 
@@ -19,9 +23,11 @@ const tabs = [
 
 export default function Orders() {
   const confirm = useConfirm()
+  const { user } = useAuth()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('all')
+  const [downloadingId, setDownloadingId] = useState(null)
 
   const loadOrders = async () => {
     const { data, error } = await supabase
@@ -38,7 +44,15 @@ export default function Orders() {
 
   useEffect(() => {
     loadOrders()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useRealtime({
+    table: 'orders',
+    filter: user?.id ? `user_id=eq.${user.id}` : undefined,
+    onChange: loadOrders,
+    enabled: Boolean(user?.id),
+  })
 
   const filtered = useMemo(() => {
     if (tab === 'all') return orders
@@ -67,15 +81,38 @@ export default function Orders() {
     loadOrders()
   }
 
+  const handleInvoice = async (order) => {
+    setDownloadingId(order.id)
+    try {
+      await downloadInvoice(order)
+    } catch (error) {
+      console.error(error)
+      toast.error('Could not generate the invoice')
+    } finally {
+      setDownloadingId(null)
+    }
+  }
+
   if (loading) return <Loader full label="Loading your orders…" />
 
   return (
     <div className="wrap py-6 sm:py-9">
+      <Seo
+        title="My orders"
+        description="Track iPhone Hub orders, follow delivery progress, download invoices and request returns."
+        noindex
+      />
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow">Your account</p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink sm:text-4xl">My orders</h1>
-          <p className="mt-1.5 text-sm text-muted">Track deliveries, view receipts, and manage orders.</p>
+          <p className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-muted">
+            Track deliveries, view receipts, and manage orders.
+            <span className="inline-flex items-center gap-1.5 rounded-pill bg-success/10 px-2 py-0.5 text-[10px] font-semibold text-success">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
+              Live updates
+            </span>
+          </p>
         </div>
         <Link to="/shop" className="btn-outline btn-sm">Continue shopping</Link>
       </div>
@@ -150,7 +187,13 @@ export default function Orders() {
                     {items.slice(0, 4).map((item) => (
                       <span key={item.id} className="grid h-12 w-10 place-items-center overflow-hidden rounded-lg bg-soft">
                         {item.image ? (
-                          <img src={item.image} alt="" className="h-full w-full object-contain p-1" />
+                          <img
+                            src={item.image}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                            className="h-full w-full object-contain p-1"
+                          />
                         ) : (
                           <PackageCheck size={15} className="text-muted" />
                         )}
@@ -174,7 +217,16 @@ export default function Orders() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleInvoice(order)}
+                      disabled={downloadingId === order.id}
+                      className="btn-ghost btn-sm"
+                    >
+                      <Download size={13} />
+                      {downloadingId === order.id ? 'Generating…' : 'Invoice'}
+                    </button>
                     {cancellable && (
                       <button
                         type="button"

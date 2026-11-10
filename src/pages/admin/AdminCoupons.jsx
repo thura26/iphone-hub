@@ -14,6 +14,7 @@ import {
 import { toast } from 'sonner'
 import { supabase } from '@/supabaseClient'
 import { useConfirm } from '@/context/ConfirmContext'
+import { logAudit } from '@/lib/audit'
 import { cn, formatDate, formatMMK, formatNumber } from '@/lib/utils'
 import Modal from '@/components/common/Modal'
 import Loader from '@/components/common/Loader'
@@ -27,6 +28,7 @@ const blank = {
   value: '',
   min_spend: '0',
   usage_limit: '',
+  per_user_limit: '',
   expires_at: '',
   active: true,
 }
@@ -100,6 +102,8 @@ export default function AdminCoupons() {
       value: String(coupon.value ?? ''),
       min_spend: String(coupon.min_spend ?? 0),
       usage_limit: coupon.usage_limit == null ? '' : String(coupon.usage_limit),
+      per_user_limit:
+        coupon.per_user_limit == null ? '' : String(coupon.per_user_limit),
       expires_at: toDateInput(coupon.expires_at),
       active: coupon.active !== false,
     })
@@ -122,6 +126,9 @@ export default function AdminCoupons() {
     if (form.usage_limit !== '' && Number(form.usage_limit) < 0) {
       return toast.error('Usage limit cannot be negative')
     }
+    if (form.per_user_limit !== '' && Number(form.per_user_limit) <= 0) {
+      return toast.error('Per-customer limit must be at least 1')
+    }
 
     setSaving(true)
     const payload = {
@@ -130,14 +137,23 @@ export default function AdminCoupons() {
       value: Number(form.value),
       min_spend: Math.max(0, Number(form.min_spend) || 0),
       usage_limit: form.usage_limit === '' ? null : Math.max(0, Math.floor(Number(form.usage_limit))),
+      per_user_limit:
+        form.per_user_limit === ''
+          ? null
+          : Math.max(1, Math.floor(Number(form.per_user_limit))),
       expires_at: form.expires_at
         ? new Date(`${form.expires_at}T23:59:59`).toISOString()
         : null,
       active: form.active,
     }
     const result = editing
-      ? await supabase.from('coupons').update(payload).eq('id', editing.id)
-      : await supabase.from('coupons').insert(payload)
+      ? await supabase
+          .from('coupons')
+          .update(payload)
+          .eq('id', editing.id)
+          .select('id')
+          .single()
+      : await supabase.from('coupons').insert(payload).select('id').single()
     setSaving(false)
     if (result.error) {
       toast.error(
@@ -148,6 +164,12 @@ export default function AdminCoupons() {
       return
     }
     toast.success(editing ? 'Coupon updated' : 'Coupon created')
+    void logAudit({
+      action: editing ? 'coupon.updated' : 'coupon.created',
+      entityType: 'coupon',
+      entityId: result.data?.id || editing?.id,
+      details: { code, ...payload },
+    })
     setOpen(false)
     load()
   }
@@ -165,6 +187,12 @@ export default function AdminCoupons() {
       current.map((row) => (row.id === coupon.id ? { ...row, active: !row.active } : row)),
     )
     toast.success(coupon.active ? 'Coupon deactivated' : 'Coupon activated')
+    void logAudit({
+      action: 'coupon.activation_changed',
+      entityType: 'coupon',
+      entityId: coupon.id,
+      details: { code: coupon.code, active: !coupon.active },
+    })
   }
 
   const remove = async (coupon) => {
@@ -182,6 +210,12 @@ export default function AdminCoupons() {
       return
     }
     toast.success('Coupon deleted')
+    void logAudit({
+      action: 'coupon.deleted',
+      entityType: 'coupon',
+      entityId: coupon.id,
+      details: { code: coupon.code },
+    })
     setCoupons((current) => current.filter((row) => row.id !== coupon.id))
   }
 
@@ -280,6 +314,11 @@ export default function AdminCoupons() {
                       {coupon.usage_limit != null ? ` / ${coupon.usage_limit}` : ''} used
                     </span>
                   </div>
+                  {coupon.per_user_limit != null && (
+                    <p className="mt-1 text-[10px] text-muted">
+                      Limit {coupon.per_user_limit} per customer
+                    </p>
+                  )}
                   <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-soft">
                     <div
                       className={cn('h-full rounded-full', usagePct != null && usagePct >= 100 ? 'bg-danger' : 'bg-brand')}
@@ -403,8 +442,22 @@ export default function AdminCoupons() {
               onChange={(event) => update('usage_limit', event.target.value)}
               placeholder="Unlimited"
             />
+            <p className="mt-1 text-[10px] text-muted">Total redemptions across all customers.</p>
           </div>
-          <div className="sm:col-span-2">
+          <div>
+            <label className="label" htmlFor="coupon_per_user">Per-customer limit</label>
+            <input
+              id="coupon_per_user"
+              type="number"
+              min="1"
+              className="field"
+              value={form.per_user_limit}
+              onChange={(event) => update('per_user_limit', event.target.value)}
+              placeholder="Unlimited"
+            />
+            <p className="mt-1 text-[10px] text-muted">Leave blank for unlimited use per customer.</p>
+          </div>
+          <div>
             <label className="label" htmlFor="coupon_expiry">Expiry date</label>
             <input
               id="coupon_expiry"
@@ -413,7 +466,7 @@ export default function AdminCoupons() {
               value={form.expires_at}
               onChange={(event) => update('expires_at', event.target.value)}
             />
-            <p className="mt-1 text-[10px] text-muted">Leave blank for a coupon that never expires.</p>
+            <p className="mt-1 text-[10px] text-muted">Leave blank to never expire.</p>
           </div>
           <label className="flex items-center gap-2 text-xs text-muted">
             <input

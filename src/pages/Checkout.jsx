@@ -730,7 +730,13 @@ export default function Checkout() {
                       <li key={item.variantId} className="flex items-center gap-3 py-3">
                         <span className="grid h-14 w-12 shrink-0 place-items-center overflow-hidden rounded-lg bg-soft">
                           {item.image ? (
-                            <img src={item.image} alt="" className="h-full w-full object-contain p-1" />
+                            <img
+                            src={item.image}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                            className="h-full w-full object-contain p-1"
+                          />
                           ) : (
                             <PackageCheck size={18} className="text-muted" />
                           )}
@@ -869,7 +875,13 @@ export default function Checkout() {
                     <li key={item.variantId} className="flex gap-3 py-3 first:pt-0 last:pb-0">
                       <span className="grid h-14 w-12 shrink-0 place-items-center overflow-hidden rounded-xl border border-line bg-soft">
                         {item.image ? (
-                          <img src={item.image} alt="" className="h-full w-full object-contain p-1" />
+                          <img
+                            src={item.image}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                            className="h-full w-full object-contain p-1"
+                          />
                         ) : (
                           <PackageCheck size={15} className="text-muted" />
                         )}

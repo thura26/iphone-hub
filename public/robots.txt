@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Private account and checkout areas
+Disallow: /admin
+Disallow: /auth
+Disallow: /checkout
+Disallow: /orders
+Disallow: /profile
+Disallow: /addresses
+Disallow: /wishlist
+Disallow: /welcome
+
+# Search result pages
+Disallow: /shop?*q=
+
+Sitemap: https://iphone.mmhub.site/sitemap.xml

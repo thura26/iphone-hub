@@ -13,6 +13,7 @@ import { supabase } from '@/supabaseClient'
 import { formatDate, formatMMK, PAYMENT_METHODS } from '@/lib/utils'
 import Loader from '@/components/common/Loader'
 import EmptyState from '@/components/common/EmptyState'
+import Seo from '@/components/common/Seo'
 
 export default function OrderSuccess() {
   const { orderNumber } = useParams()
@@ -65,6 +66,7 @@ export default function OrderSuccess() {
 
   return (
     <div className="wrap py-10 sm:py-16">
+      <Seo title="Order confirmed" noindex />
       <div className="mx-auto max-w-2xl">
         <div className="text-center">
           <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-success/10 text-success animate-fade-up">
@@ -106,7 +108,13 @@ export default function OrderSuccess() {
                 <li key={item.id} className="flex items-center gap-3 py-3.5">
                   <span className="grid h-14 w-12 shrink-0 place-items-center overflow-hidden rounded-lg bg-soft">
                     {item.image ? (
-                      <img src={item.image} alt="" className="h-full w-full object-contain p-1" />
+                      <img
+                        src={item.image}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-contain p-1"
+                      />
                     ) : (
                       <PackageCheck size={17} className="text-muted" />
                     )}

@@ -159,6 +159,8 @@ export default function AdminCategories() {
                       <img
                         src={category.image}
                         alt=""
+                        loading="lazy"
+                        decoding="async"
                         className="h-full w-full object-contain p-1"
                       />
                     ) : (
@@ -227,6 +229,8 @@ export default function AdminCategories() {
                               <img
                                 src={category.image}
                                 alt=""
+                                loading="lazy"
+                                decoding="async"
                                 className="h-full w-full object-contain p-1"
                               />
                             ) : (

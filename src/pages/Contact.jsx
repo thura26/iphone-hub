@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Reveal from '@/components/common/Reveal'
+import Seo from '@/components/common/Seo'
 import Select from '@/components/common/Select'
 
 const topics = [
@@ -125,6 +126,12 @@ export default function Contact() {
 
   return (
     <div className="pb-2">
+      <Seo
+        title="Contact us"
+        description="Questions about an order, trade-in or which iPhone fits you best? Contact iPhone Hub by phone, email or message — we reply within one business day."
+        url="/contact"
+        keywords="iPhone Hub contact, iPhone support Myanmar, Yangon Apple store contact"
+      />
       <section className="wrap pt-6 sm:pt-9">
         <div className="grid items-end gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <Reveal>

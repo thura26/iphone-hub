@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import ProductCard from '@/components/product/ProductCard'
 import Loader from '@/components/common/Loader'
 import Reveal from '@/components/common/Reveal'
+import Seo from '@/components/common/Seo'
 import { fetchBanners, fetchProducts } from '@/lib/api'
 import { formatMMK } from '@/lib/utils'
 
@@ -75,6 +76,12 @@ export default function Home() {
 
   return (
     <div>
+      <Seo
+        title="iPhone Hub — Premium iPhones & Accessories in Myanmar"
+        description="Shop the latest iPhone 18 Pro, iPhone Air and genuine Apple accessories at iPhone Hub. Free delivery over Ks 5,000,000, 7-day returns and 1-year warranty across Myanmar."
+        url="/"
+        keywords="iPhone Myanmar, buy iPhone Yangon, iPhone 18 Pro price, Apple accessories Myanmar"
+      />
       <section className="wrap pt-5 sm:pt-7">
         <div className="grid gap-3 lg:grid-cols-3">
           <Link
@@ -84,6 +91,8 @@ export default function Home() {
             <img
               src={primaryBanner?.image || '/images/hero/iphone-18-pro-hero-v2.webp'}
               alt={primaryBanner?.title || 'iPhone 18 Pro'}
+              fetchPriority="high"
+              decoding="async"
               className="absolute inset-0 h-full w-full object-cover object-[78%_center] opacity-95 transition-transform duration-700 group-hover:scale-[1.03] sm:object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-black/5 sm:bg-gradient-to-r sm:from-black/90 sm:via-black/40 sm:to-transparent" />
@@ -132,6 +141,8 @@ export default function Home() {
               <img
                 src={secondaryBanner?.image || '/images/products/iphone-air-skyblue.webp'}
                 alt="iPhone Air"
+                loading="lazy"
+                decoding="async"
                 className="hidden h-56 w-auto object-contain drop-shadow-xl transition-transform duration-500 group-hover:-translate-y-1.5 group-hover:scale-[1.03] lg:block xl:h-64"
               />
             </div>
@@ -268,6 +279,8 @@ export default function Home() {
           <img
             src="/images/products/iphone-18-pro-max-burgundy.webp"
             alt="iPhone 18 Pro Max"
+            loading="lazy"
+            decoding="async"
             className="pointer-events-none absolute -bottom-10 right-0 hidden h-[115%] w-auto rotate-[-8deg] object-contain opacity-90 sm:block lg:right-10"
           />
         </div>

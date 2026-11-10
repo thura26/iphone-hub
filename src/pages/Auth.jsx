@@ -179,12 +179,6 @@ export default function Auth() {
     navigate("/", { replace: true });
   };
 
-  const fillDemo = (account) => {
-    update("email", account.email);
-    update("password", account.password);
-    switchMode("login");
-  };
-
   return (
     <div className="min-h-screen bg-bg lg:grid lg:grid-cols-[1.05fr_1fr]">
       <aside className="relative hidden overflow-hidden bg-[#050506] p-10 text-white lg:flex lg:flex-col lg:justify-between">
@@ -215,6 +209,8 @@ export default function Auth() {
         <img
           src="/images/products/iphone-18-pro-burgundy.webp"
           alt="iPhone 18 Pro"
+          loading="lazy"
+          decoding="async"
           className="pointer-events-none absolute -bottom-10 -right-16 h-[70%] w-auto rotate-6 object-contain opacity-90"
         />
       </aside>

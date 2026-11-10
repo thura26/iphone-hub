@@ -65,6 +65,7 @@ export default function ProductCard({ product, className, revealDelay = 0 }) {
             src={product.images?.[0] || cheapest?.image}
             alt={product.name}
             loading="lazy"
+            decoding="async"
             className="h-full w-full object-contain p-4 transition-transform duration-500 group-hover:scale-[1.04]"
           />
         ) : (

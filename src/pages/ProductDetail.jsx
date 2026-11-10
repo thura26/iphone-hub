@@ -25,6 +25,7 @@ import EmptyState from '@/components/common/EmptyState'
 import RatingStars from '@/components/common/RatingStars'
 import Reveal from '@/components/common/Reveal'
 import QuantityStepper from '@/components/common/QuantityStepper'
+import Seo from '@/components/common/Seo'
 import ProductGallery from '@/components/product/ProductGallery'
 import VariantSelector from '@/components/product/VariantSelector'
 import ProductCard from '@/components/product/ProductCard'
@@ -192,6 +193,7 @@ export default function ProductDetail() {
   if (notFound || !product) {
     return (
       <div className="wrap py-16">
+        <Seo title="Product not found" noindex />
         <EmptyState
           icon={PackageCheck}
           title="Product not found"
@@ -214,6 +216,33 @@ export default function ProductDetail() {
     new Set([selectedVariant?.image, ...(product.images || [])].filter(Boolean)),
   )
   const canBuy = Boolean(selectedVariant) && stock > 0
+
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description || `Buy ${product.name} at iPhone Hub in Myanmar.`,
+    image: images,
+    sku: product.id,
+    category: product.categories?.name || 'iPhone',
+    brand: { '@type': 'Brand', name: 'Apple' },
+    aggregateRating:
+      Number(product.review_count) > 0
+        ? {
+            '@type': 'AggregateRating',
+            ratingValue: Number(product.rating || 0).toFixed(1),
+            reviewCount: Number(product.review_count),
+          }
+        : undefined,
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'MMK',
+      price,
+      availability: canBuy ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      url: `/product/${product.slug}`,
+      seller: { '@type': 'Organization', name: 'iPhone Hub' },
+    },
+  }
 
   const buildCartItem = () => ({
     variantId: selectedVariant.id,
@@ -264,6 +293,18 @@ export default function ProductDetail() {
 
   return (
     <div className="wrap py-5 sm:py-8">
+      <Seo
+        title={`${product.name} — ${formatMMK(price)}`}
+        description={
+          product.description ||
+          `Buy the ${product.name} at iPhone Hub. Genuine Apple product with local warranty, fast delivery and 7-day returns across Myanmar.`
+        }
+        image={product.images?.[0]}
+        url={`/product/${product.slug}`}
+        type="product"
+        keywords={`${product.name}, ${product.name} price Myanmar, buy ${product.name} Yangon`}
+        jsonLd={productJsonLd}
+      />
       <nav className="mb-4 flex items-center gap-1.5 overflow-x-auto text-xs text-muted no-scrollbar">
         <Link to="/" className="hover:text-ink">Home</Link>
         <ChevronRight size={12} />

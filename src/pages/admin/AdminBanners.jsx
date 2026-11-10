@@ -148,7 +148,13 @@ export default function AdminBanners() {
             <article key={banner.id} className="card overflow-hidden">
               <div className="relative aspect-[16/9] bg-soft">
                 {banner.image ? (
-                  <img src={banner.image} alt="" className="h-full w-full object-cover" />
+                  <img
+                    src={banner.image}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <div className="flex h-full items-center justify-center text-muted">
                     <Image size={26} />
@@ -258,7 +264,13 @@ export default function AdminBanners() {
           </div>
           {form.image && (
             <div className="sm:col-span-2 overflow-hidden rounded-xl border border-line bg-soft">
-              <img src={form.image} alt="Banner preview" className="h-36 w-full object-cover" />
+              <img
+                src={form.image}
+                alt="Banner preview"
+                loading="lazy"
+                decoding="async"
+                className="h-36 w-full object-cover"
+              />
             </div>
           )}
           <div>

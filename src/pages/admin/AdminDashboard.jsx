@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   ArrowRight,
   BadgeDollarSign,
+  Download,
   Package,
   ShoppingCart,
   Star,
@@ -18,7 +19,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { toast } from 'sonner'
 import { supabase } from '@/supabaseClient'
+import { dateStamp, downloadCsv } from '@/lib/csv'
 import { formatDate, formatMMK } from '@/lib/utils'
 import StatCard from '@/components/admin/StatCard'
 import StatusBadge from '@/components/common/StatusBadge'
@@ -100,6 +103,61 @@ export default function AdminDashboard() {
 
   const salesSeries = useMemo(() => buildSalesSeries(orders), [orders])
 
+  const revenueReport = useMemo(() => {
+    const map = new Map()
+    orders
+      .filter((order) => order.status !== 'cancelled')
+      .forEach((order) => {
+        const key = new Date(order.created_at).toISOString().slice(0, 10)
+        const current = map.get(key) || {
+          date: key,
+          orders: 0,
+          gross: 0,
+          shipping: 0,
+          discount: 0,
+          net: 0,
+        }
+        current.orders += 1
+        current.gross += Number(order.subtotal || 0)
+        current.shipping += Number(order.shipping_fee || 0)
+        current.discount += Number(order.discount || 0)
+        current.net += Number(order.total_amount || 0)
+        map.set(key, current)
+      })
+    return [...map.values()].sort((a, b) => a.date.localeCompare(b.date))
+  }, [orders])
+
+  const exportRevenue = () => {
+    if (revenueReport.length === 0) {
+      toast.info('No revenue data to export yet')
+      return
+    }
+    const totals = revenueReport.reduce(
+      (sum, day) => ({
+        date: 'TOTAL',
+        orders: sum.orders + day.orders,
+        gross: sum.gross + day.gross,
+        shipping: sum.shipping + day.shipping,
+        discount: sum.discount + day.discount,
+        net: sum.net + day.net,
+      }),
+      { date: 'TOTAL', orders: 0, gross: 0, shipping: 0, discount: 0, net: 0 },
+    )
+    downloadCsv(
+      `revenue-report-${dateStamp()}.csv`,
+      [
+        { label: 'Date', key: 'date' },
+        { label: 'Orders', key: 'orders' },
+        { label: 'Gross sales (MMK)', key: 'gross' },
+        { label: 'Shipping (MMK)', key: 'shipping' },
+        { label: 'Discounts (MMK)', key: 'discount' },
+        { label: 'Net revenue (MMK)', key: 'net' },
+      ],
+      [...revenueReport, totals],
+    )
+    toast.success('Revenue report exported')
+  }
+
   const topProducts = useMemo(() => {
     const map = new Map()
     orders
@@ -136,6 +194,10 @@ export default function AdminDashboard() {
           <Link to="/admin/orders" className="btn-outline btn-sm">
             View orders
           </Link>
+          <button type="button" onClick={exportRevenue} className="btn-outline btn-sm">
+            <Download size={14} />
+            Export revenue
+          </button>
         </div>
       </div>
 

@@ -65,7 +65,13 @@ export default function VariantSelector({ variants = [], selected, onChange }) {
                 aria-pressed={active}
               >
                 {image ? (
-                  <img src={image} alt="" className="h-7 w-7 rounded-full object-cover" />
+                  <img
+                    src={image}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="h-7 w-7 rounded-full object-cover"
+                  />
                 ) : (
                   <span
                     className="h-7 w-7 rounded-full border border-black/5"

@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   ExternalLink,
   Image,
   LayoutDashboard,
   LogOut,
+  Mail,
   Menu,
   Package,
+  RotateCcw,
+  ScrollText,
   ShoppingCart,
   Star,
   Store,
@@ -18,20 +21,25 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/supabaseClient'
+import { subscribeToTable } from '@/lib/realtime'
 import { useAuth } from '@/context/AuthContext'
 import { useConfirm } from '@/context/ConfirmContext'
 import Avatar from '@/components/common/Avatar'
+import Loader from '@/components/common/Loader'
 import { cn } from '@/lib/utils'
 
 const links = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+  { to: '/admin/returns', label: 'Returns', icon: RotateCcw },
   { to: '/admin/products', label: 'Products', icon: Package },
   { to: '/admin/customers', label: 'Customers', icon: Users },
   { to: '/admin/categories', label: 'Categories', icon: Tags },
   { to: '/admin/banners', label: 'Banners', icon: Image },
   { to: '/admin/reviews', label: 'Reviews', icon: Star },
   { to: '/admin/coupons', label: 'Coupons', icon: TicketPercent },
+  { to: '/admin/newsletter', label: 'Newsletter', icon: Mail },
+  { to: '/admin/audit-log', label: 'Audit log', icon: ScrollText },
   { to: '/admin/settings', label: 'Settings', icon: Settings },
 ]
 
@@ -42,6 +50,7 @@ export default function AdminLayout() {
   const location = useLocation()
   const [open, setOpen] = useState(false)
   const [pendingOrders, setPendingOrders] = useState(0)
+  const [pendingReturns, setPendingReturns] = useState(0)
 
   useEffect(() => {
     setOpen(false)
@@ -49,17 +58,34 @@ export default function AdminLayout() {
 
   useEffect(() => {
     let active = true
-    supabase
-      .from('orders')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'pending')
-      .then(({ count }) => {
-        if (active) setPendingOrders(count || 0)
-      })
+    const loadCounts = () => {
+      supabase
+        .from('orders')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending')
+        .then(({ count }) => {
+          if (active) setPendingOrders(count || 0)
+        })
+      supabase
+        .from('return_requests')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending')
+        .then(({ count }) => {
+          if (active) setPendingReturns(count || 0)
+        })
+    }
+    loadCounts()
+    const unsubscribeOrders = subscribeToTable({ table: 'orders', onChange: loadCounts })
+    const unsubscribeReturns = subscribeToTable({
+      table: 'return_requests',
+      onChange: loadCounts,
+    })
     return () => {
       active = false
+      unsubscribeOrders()
+      unsubscribeReturns()
     }
-  }, [location.pathname])
+  }, [])
 
   const handleSignOut = async () => {
     const confirmed = await confirm({
@@ -129,6 +155,11 @@ export default function AdminLayout() {
                   {pendingOrders}
                 </span>
               )}
+              {label === 'Returns' && pendingReturns > 0 && (
+                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-warning px-1.5 text-[10px] font-bold text-white">
+                  {pendingReturns}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -182,7 +213,9 @@ export default function AdminLayout() {
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <div key={location.pathname} className="page-enter">
-            <Outlet />
+            <Suspense fallback={<Loader label="Loading…" />}>
+              <Outlet />
+            </Suspense>
           </div>
         </main>
       </div>
