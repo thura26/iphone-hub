@@ -16,9 +16,20 @@ export const DEFAULT_SHIPPING = {
   free_threshold: 5000000,
 }
 
+export const DEFAULT_ANNOUNCEMENT = {
+  enabled: true,
+}
+
+const FALLBACKS = {
+  store: DEFAULT_STORE,
+  shipping: DEFAULT_SHIPPING,
+  announcement: DEFAULT_ANNOUNCEMENT,
+}
+
 const SiteSettingsContext = createContext({
   store: DEFAULT_STORE,
   shipping: DEFAULT_SHIPPING,
+  announcement: DEFAULT_ANNOUNCEMENT,
   refresh: async () => {},
 })
 
@@ -26,12 +37,14 @@ export function SiteSettingsProvider({ children }) {
   const [settings, setSettings] = useState({
     store: DEFAULT_STORE,
     shipping: DEFAULT_SHIPPING,
+    announcement: DEFAULT_ANNOUNCEMENT,
   })
 
   const applySettings = (data) => {
     setSettings({
       store: { ...DEFAULT_STORE, ...(data.store || {}) },
       shipping: { ...DEFAULT_SHIPPING, ...(data.shipping || {}) },
+      announcement: { ...DEFAULT_ANNOUNCEMENT, ...(data.announcement || {}) },
     })
   }
 
@@ -57,11 +70,12 @@ export function SiteSettingsProvider({ children }) {
       table: 'settings',
       onChange: (payload) => {
         const row = payload.new || {}
-        if (row.key === 'store' || row.key === 'shipping') {
+        const fallback = FALLBACKS[row.key]
+        if (fallback) {
           setSettings((current) => ({
             ...current,
             [row.key]: {
-              ...(row.key === 'store' ? DEFAULT_STORE : DEFAULT_SHIPPING),
+              ...fallback,
               ...(row.value || {}),
             },
           }))

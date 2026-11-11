@@ -18,6 +18,7 @@ const entityTypes = [
   { value: 'category', label: 'Categories' },
   { value: 'banner', label: 'Banners' },
   { value: 'review', label: 'Reviews' },
+  { value: 'newsletter', label: 'Newsletter' },
   { value: 'settings', label: 'Settings' },
 ]
 

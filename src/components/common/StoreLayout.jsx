@@ -1,12 +1,12 @@
-import { Suspense, useEffect } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { Truck } from 'lucide-react'
+import { ArrowUp, Truck } from 'lucide-react'
 import Header from '@/components/common/Header'
 import Footer from '@/components/common/Footer'
 import CartDrawer from '@/components/common/CartDrawer'
 import Loader from '@/components/common/Loader'
 import { useSiteSettings } from '@/context/SiteSettingsContext'
-import { formatMMK } from '@/lib/utils'
+import { cn, formatMMK } from '@/lib/utils'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -16,11 +16,48 @@ function ScrollToTop() {
   return null
 }
 
+function BackToTop() {
+  const visible = useBackToTopVisible()
+
+  return (
+    <button
+      type="button"
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      aria-label="Back to top"
+      title="Back to top"
+      className={cn(
+        'fixed bottom-5 right-4 z-30 grid h-11 w-11 place-items-center rounded-full border border-line bg-surface/90 text-ink shadow-[var(--shadow-float)] backdrop-blur transition-all duration-300 hover:bg-soft sm:bottom-6 sm:right-6',
+        visible
+          ? 'translate-y-0 opacity-100'
+          : 'pointer-events-none translate-y-3 opacity-0',
+      )}
+    >
+      <ArrowUp size={18} />
+    </button>
+  )
+}
+
+function useBackToTopVisible() {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 480)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  return visible
+}
+
 export default function StoreLayout() {
   const { pathname } = useLocation()
-  const { shipping } = useSiteSettings()
+  const { shipping, announcement } = useSiteSettings()
   const freeThreshold = Number(shipping.free_threshold) || 0
-  const hideAnnouncement = pathname === '/checkout' || pathname.startsWith('/order-success')
+  const hideAnnouncement =
+    announcement.enabled === false ||
+    pathname === '/checkout' ||
+    pathname.startsWith('/order-success')
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">
@@ -52,6 +89,7 @@ export default function StoreLayout() {
       </main>
       <Footer />
       <CartDrawer />
+      <BackToTop />
     </div>
   )
 }

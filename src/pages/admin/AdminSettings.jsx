@@ -7,6 +7,7 @@ import {
   Loader2,
   Mail,
   MapPin,
+  Megaphone,
   Phone,
   Save,
   Store,
@@ -16,7 +17,7 @@ import {
 import { toast } from 'sonner'
 import { supabase } from '@/supabaseClient'
 import { useSiteSettings } from '@/context/SiteSettingsContext'
-import { formatMMK } from '@/lib/utils'
+import { cn, formatMMK } from '@/lib/utils'
 import Loader from '@/components/common/Loader'
 
 const defaultStore = {
@@ -33,12 +34,17 @@ const defaultShipping = {
   free_threshold: 5000000,
 }
 
+const defaultAnnouncement = {
+  enabled: true,
+}
+
 export default function AdminSettings() {
   const { refresh } = useSiteSettings()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [store, setStore] = useState(defaultStore)
   const [shipping, setShipping] = useState(defaultShipping)
+  const [announcement, setAnnouncement] = useState(defaultAnnouncement)
   const [lastUpdated, setLastUpdated] = useState(null)
 
   useEffect(() => {
@@ -57,6 +63,7 @@ export default function AdminSettings() {
         const map = Object.fromEntries(rows.map((row) => [row.key, row.value]))
         setStore({ ...defaultStore, ...(map.store || {}) })
         setShipping({ ...defaultShipping, ...(map.shipping || {}) })
+        setAnnouncement({ ...defaultAnnouncement, ...(map.announcement || {}) })
         const timestamps = rows
           .map((row) => row.updated_at)
           .filter(Boolean)
@@ -125,6 +132,13 @@ export default function AdminSettings() {
               standard: Math.max(0, Number(shipping.standard) || 0),
               express: Math.max(0, Number(shipping.express) || 0),
               free_threshold: Math.max(0, Number(shipping.free_threshold) || 0),
+            },
+            updated_at: now,
+          },
+          {
+            key: 'announcement',
+            value: {
+              enabled: announcement.enabled !== false,
             },
             updated_at: now,
           },
@@ -236,6 +250,54 @@ export default function AdminSettings() {
                 </div>
               </div>
             </div>
+          </section>
+
+          <section className="card p-5">
+            <div className="flex items-center gap-2">
+              <Megaphone size={17} className="text-brand" />
+              <h2 className="text-sm font-bold text-ink">Announcement bar</h2>
+            </div>
+            <p className="mt-1 text-[11px] text-muted">
+              The slim strip above the header on the storefront. It shows the free delivery
+              threshold and the return window.
+            </p>
+            <div className="mt-4 flex items-center justify-between gap-4 rounded-xl border border-line bg-soft/60 p-4">
+              <div>
+                <p className="text-sm font-semibold text-ink">Show announcement bar</p>
+                <p className="mt-0.5 text-[11px] text-muted">
+                  Hidden on checkout and order confirmation pages.
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={announcement.enabled !== false}
+                aria-label="Show announcement bar"
+                onClick={() =>
+                  setAnnouncement((current) => ({
+                    ...current,
+                    enabled: current.enabled === false,
+                  }))
+                }
+                className={cn(
+                  'relative h-6 w-11 shrink-0 rounded-full transition-colors',
+                  announcement.enabled !== false ? 'bg-brand' : 'bg-line',
+                )}
+              >
+                <span
+                  className={cn(
+                    'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform',
+                    announcement.enabled !== false ? 'translate-x-[22px]' : 'translate-x-0.5',
+                  )}
+                />
+              </button>
+            </div>
+            {announcement.enabled !== false && (
+              <div className="mt-3 rounded-lg border border-line bg-soft/40 px-3 py-2 text-center text-[11px] text-muted">
+                Free standard delivery on orders over{' '}
+                <span className="font-semibold text-ink">{formatMMK(shipping.free_threshold)}</span>
+              </div>
+            )}
           </section>
 
           <section className="card p-5">
@@ -391,8 +453,9 @@ export default function AdminSettings() {
             <p className="font-semibold text-ink">About settings</p>
             <p className="mt-1.5">
               Values are stored as JSON in the Supabase <span className="font-mono">settings</span>{' '}
-              table. The store profile feeds the header, footer, contact page and invoices, while
-              the shipping rates feed checkout totals and the announcement bar.
+              table. The store profile feeds the header, footer, contact page and invoices, the
+              shipping rates feed checkout totals and the announcement bar, and the announcement
+              toggle shows or hides that bar across the storefront.
             </p>
             {lastUpdated && (
               <p className="mt-2 text-[10px]">

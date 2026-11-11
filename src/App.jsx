@@ -38,6 +38,7 @@ const AdminBanners = lazy(() => import('@/pages/admin/AdminBanners'))
 const AdminReviews = lazy(() => import('@/pages/admin/AdminReviews'))
 const AdminCoupons = lazy(() => import('@/pages/admin/AdminCoupons'))
 const AdminReturns = lazy(() => import('@/pages/admin/AdminReturns'))
+const AdminNewsletter = lazy(() => import('@/pages/admin/AdminNewsletter'))
 const AdminAuditLog = lazy(() => import('@/pages/admin/AdminAuditLog'))
 const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'))
 
@@ -149,6 +150,7 @@ export default function App() {
                     <Route path="reviews" element={<AdminReviews />} />
                     <Route path="coupons" element={<AdminCoupons />} />
                     <Route path="returns" element={<AdminReturns />} />
+                    <Route path="newsletter" element={<AdminNewsletter />} />
                     <Route path="audit-log" element={<AdminAuditLog />} />
                     <Route path="settings" element={<AdminSettings />} />
                     <Route path="*" element={<Navigate to="/admin" replace />} />

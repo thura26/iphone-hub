@@ -5,6 +5,7 @@ import {
   Image,
   LayoutDashboard,
   LogOut,
+  Mail,
   Menu,
   Package,
   RotateCcw,
@@ -39,6 +40,7 @@ const links = [
   { to: '/admin/banners', label: 'Banners', icon: Image },
   { to: '/admin/reviews', label: 'Reviews', icon: Star },
   { to: '/admin/coupons', label: 'Coupons', icon: TicketPercent },
+  { to: '/admin/newsletter', label: 'Newsletter', icon: Mail },
   { to: '/admin/audit-log', label: 'Audit log', icon: ScrollText },
   { to: '/admin/settings', label: 'Settings', icon: Settings },
 ]
