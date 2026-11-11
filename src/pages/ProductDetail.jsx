@@ -211,6 +211,7 @@ export default function ProductDetail() {
   }
 
   const variants = product.product_variants || []
+  const storageCount = new Set(variants.map((variant) => variant.storage).filter(Boolean)).size
   const price = Number(selectedVariant?.price ?? product.base_price)
   const stock = Number(selectedVariant?.stock ?? 0)
   const wishlisted = has(product.id)
@@ -361,7 +362,9 @@ export default function ProductDetail() {
             <span className="text-3xl font-bold tracking-tight text-ink">{formatMMK(price)}</span>
             {selectedVariant && (
               <span className="text-xs text-muted">
-                {selectedVariant.storage} · {selectedVariant.color}
+                {storageCount > 1
+                  ? `${selectedVariant.storage} · ${selectedVariant.color}`
+                  : selectedVariant.color}
               </span>
             )}
           </div>

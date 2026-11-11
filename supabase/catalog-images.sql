@@ -217,57 +217,68 @@ on conflict (slug) do update set
   images = excluded.images,
   active = true;
 
--- Variants for every color and storage
-with specs (slug, colors, files, hexes, storages, prices, stock, single_image) as (
+-- One variant per color image (no storage multiplication)
+with specs (slug, colors, files, hexes, storage, price, stock, single_image) as (
   values
-  ('iphone-18-pro', array['Black', 'Burgundy', 'Glacier', 'Silver']::text[], array['black', 'burgundy', 'glacier', 'silver']::text[], array['#1C1C1E', '#6E2B3A', '#D7DDE0', '#D9D9D9']::text[], array['256GB', '512GB', '1TB']::text[], array['4799000', '5499000', '6299000']::numeric[], 8, null),
-  ('iphone-18-pro-max', array['Black', 'Burgundy', 'Glacier', 'Silver']::text[], array['black', 'burgundy', 'glacier', 'silver']::text[], array['#1C1C1E', '#6E2B3A', '#D7DDE0', '#D9D9D9']::text[], array['256GB', '512GB', '1TB']::text[], array['5299000', '5999000', '6799000']::numeric[], 6, null),
-  ('iphone-air', array['Space Black', 'Light Gold', 'Sky Blue', 'Cloud White']::text[], array['spaceblack', 'lightgold', 'skyblue', 'cloudwhite']::text[], array['#2F2F31', '#E8DCC3', '#BFD8E6', '#F4F4F2']::text[], array['256GB', '512GB', '1TB']::text[], array['3299000', '3699000', '4299000']::numeric[], 7, null),
-  ('iphone-17', array['Black', 'Lavender', 'Mist Blue', 'Sage', 'White']::text[], array['black', 'lavender', 'mistblue', 'sage', 'white']::text[], array['#1B1B1D', '#C9C0E8', '#B9D4E6', '#B9C8B1', '#F7F7F7']::text[], array['128GB', '256GB', '512GB']::text[], array['2699000', '3099000', '3599000']::numeric[], 10, null),
-  ('iphone-17e', array['Black', 'White', 'Soft Pink']::text[], array['black', 'white', 'softpink']::text[], array['#1B1B1D', '#F7F7F7', '#F2C6C9']::text[], array['128GB', '256GB']::text[], array['1899000', '2199000']::numeric[], 12, null),
-  ('iphone-17-pro', array['Cosmic Orange', 'Deep Blue', 'Silver']::text[], array['cosmicorange', 'deepblue', 'silver']::text[], array['#E8793B', '#2C3E66', '#D9D9D9']::text[], array['256GB', '512GB', '1TB']::text[], array['3999000', '4499000', '5199000']::numeric[], 6, null),
-  ('iphone-17-pro-max', array['Cosmic Orange', 'Deep Blue', 'Silver']::text[], array['cosmicorange', 'deepblue', 'silver']::text[], array['#E8793B', '#2C3E66', '#D9D9D9']::text[], array['256GB', '512GB', '1TB']::text[], array['5299000', '5999000', '6799000']::numeric[], 6, null),
-  ('iphone-16', array['Black', 'Pink', 'Teal', 'Ultramarine', 'White']::text[], array['black', 'pink', 'teal', 'ultramarine', 'white']::text[], array['#1B1B1D', '#F2C6C9', '#7FB6B0', '#4B5CC4', '#F7F7F7']::text[], array['128GB', '256GB', '512GB']::text[], array['2299000', '2599000', '2999000']::numeric[], 14, null),
-  ('iphone-16e', array['Black', 'White']::text[], array['black', 'white']::text[], array['#1B1B1D', '#F7F7F7']::text[], array['128GB', '256GB']::text[], array['1699000', '1999000']::numeric[], 16, null),
-  ('iphone-15', array['Black', 'Blue', 'Green', 'Pink', 'Yellow']::text[], array['black', 'blue', 'green', 'pink', 'yellow']::text[], array['#1B1B1D', '#C9D9E6', '#CFE0CF', '#F7C8D0', '#F2E6B8']::text[], array['128GB', '256GB', '512GB']::text[], array['1899000', '2199000', '2499000']::numeric[], 15, null),
-  ('iphone-14', array['Blue', 'Midnight', 'Purple', 'Red', 'Starlight']::text[], array['blue', 'midnight', 'purple', 'red', 'starlight']::text[], array['#A7C1D9', '#1F2937', '#D8CDE8', '#C8102E', '#F5F1E8']::text[], array['128GB', '256GB']::text[], array['1599000', '1799000']::numeric[], 16, null),
-  ('iphone-duo', array['Night Sky', 'Star White']::text[], array['night-sky', 'star-white']::text[], array['#2B2F3A', '#F4F2EC']::text[], array['256GB', '512GB']::text[], array['6999000', '7499000']::numeric[], 4, null),
-  ('ipad', array['Blue', 'Pink', 'Silver', 'Yellow']::text[], array['blue', 'pink', 'silver', 'yellow']::text[], array['#8EC5E8', '#F2A7C3', '#D9D9D9', '#F2D06B']::text[], array['128GB', '256GB', '512GB']::text[], array['1299000', '1599000', '1999000']::numeric[], 8, null),
-  ('ipad-mini', array['Midnight', 'Starlight']::text[], array['midnight', 'starlight']::text[], array['#2B2F3A', '#F5F1E8']::text[], array['128GB', '256GB', '512GB']::text[], array['1899000', '2199000', '2699000']::numeric[], 8, null),
-  ('ipad-air-11', array['Blue', 'Purple', 'Space Gray', 'Starlight']::text[], array['blue', 'purple', 'spacegray', 'starlight']::text[], array['#8EC5E8', '#C9B8E8', '#4A4A4C', '#F5F1E8']::text[], array['128GB', '256GB', '512GB']::text[], array['2299000', '2699000', '3199000']::numeric[], 8, null),
-  ('ipad-air-13', array['Blue', 'Purple', 'Space Gray', 'Starlight']::text[], array['blue', 'purple', 'spacegray', 'starlight']::text[], array['#8EC5E8', '#C9B8E8', '#4A4A4C', '#F5F1E8']::text[], array['128GB', '256GB', '512GB']::text[], array['2999000', '3399000', '3899000']::numeric[], 8, null),
-  ('ipad-pro-11', array['Silver', 'Space Black']::text[], array['silver', 'spaceblack']::text[], array['#D9D9D9', '#2B2B2D']::text[], array['256GB', '512GB', '1TB']::text[], array['3999000', '4599000', '5399000']::numeric[], 6, null),
-  ('ipad-pro-13', array['Silver', 'Space Black']::text[], array['silver', 'spaceblack']::text[], array['#D9D9D9', '#2B2B2D']::text[], array['256GB', '512GB', '1TB']::text[], array['4999000', '5599000', '6399000']::numeric[], 6, null),
-  ('macbook-air-13', array['Midnight', 'Silver', 'Sky Blue', 'Starlight']::text[], array['midnight', 'silver', 'skyblue', 'starlight']::text[], array['#2B2F3A', '#D9D9D9', '#BFD8E6', '#F5F1E8']::text[], array['256GB', '512GB', '1TB']::text[], array['3499000', '3999000', '4699000']::numeric[], 6, null),
-  ('macbook-air-15', array['Midnight', 'Silver', 'Sky Blue', 'Starlight']::text[], array['midnight', 'silver', 'skyblue', 'starlight']::text[], array['#2B2F3A', '#D9D9D9', '#BFD8E6', '#F5F1E8']::text[], array['256GB', '512GB', '1TB']::text[], array['4199000', '4699000', '5399000']::numeric[], 6, null),
-  ('macbook-pro-14', array['Space Black', 'Silver']::text[], array['spaceblack', 'silver']::text[], array['#2B2B2D', '#D9D9D9']::text[], array['512GB', '1TB', '2TB']::text[], array['5999000', '6899000', '8299000']::numeric[], 4, null),
-  ('macbook-pro-16', array['Space Black', 'Silver']::text[], array['spaceblack', 'silver']::text[], array['#2B2B2D', '#D9D9D9']::text[], array['512GB', '1TB', '2TB']::text[], array['7499000', '8399000', '9799000']::numeric[], 4, null),
-  ('airpods-4', array['White']::text[], array['white']::text[], array['#FFFFFF']::text[], array['One Size']::text[], array['449000']::numeric[], 20, '/images/products/airpods-4.png'),
-  ('airpods-5', array['White']::text[], array['white']::text[], array['#FFFFFF']::text[], array['One Size']::text[], array['549000']::numeric[], 20, '/images/products/airpods-5.png'),
-  ('airpods-pro-3', array['White']::text[], array['white']::text[], array['#FFFFFF']::text[], array['One Size']::text[], array['799000']::numeric[], 20, '/images/products/airpods-pro-3.png'),
-  ('airpods-max', array['Blue', 'Midnight', 'Orange', 'Purple', 'Starlight']::text[], array['blue', 'midnight', 'orange', 'purple', 'starlight']::text[], array['#6C8EBF', '#2B2F3A', '#E8A07A', '#C9B8E8', '#F5F1E8']::text[], array['One Size']::text[], array['1499000']::numeric[], 15, null)
+  ('iphone-18-pro', array['Black', 'Burgundy', 'Glacier', 'Silver']::text[], array['black', 'burgundy', 'glacier', 'silver']::text[], array['#1C1C1E', '#6E2B3A', '#D7DDE0', '#D9D9D9']::text[], '256GB', 4799000, 8, null),
+  ('iphone-18-pro-max', array['Black', 'Burgundy', 'Glacier', 'Silver']::text[], array['black', 'burgundy', 'glacier', 'silver']::text[], array['#1C1C1E', '#6E2B3A', '#D7DDE0', '#D9D9D9']::text[], '256GB', 5299000, 6, null),
+  ('iphone-air', array['Space Black', 'Light Gold', 'Sky Blue', 'Cloud White']::text[], array['spaceblack', 'lightgold', 'skyblue', 'cloudwhite']::text[], array['#2F2F31', '#E8DCC3', '#BFD8E6', '#F4F4F2']::text[], '256GB', 3299000, 7, null),
+  ('iphone-17', array['Black', 'Lavender', 'Mist Blue', 'Sage', 'White']::text[], array['black', 'lavender', 'mistblue', 'sage', 'white']::text[], array['#1B1B1D', '#C9C0E8', '#B9D4E6', '#B9C8B1', '#F7F7F7']::text[], '128GB', 2699000, 10, null),
+  ('iphone-17e', array['Black', 'White', 'Soft Pink']::text[], array['black', 'white', 'softpink']::text[], array['#1B1B1D', '#F7F7F7', '#F2C6C9']::text[], '128GB', 1899000, 12, null),
+  ('iphone-17-pro', array['Cosmic Orange', 'Deep Blue', 'Silver']::text[], array['cosmicorange', 'deepblue', 'silver']::text[], array['#E8793B', '#2C3E66', '#D9D9D9']::text[], '256GB', 3999000, 6, null),
+  ('iphone-17-pro-max', array['Cosmic Orange', 'Deep Blue', 'Silver']::text[], array['cosmicorange', 'deepblue', 'silver']::text[], array['#E8793B', '#2C3E66', '#D9D9D9']::text[], '256GB', 5299000, 6, null),
+  ('iphone-16', array['Black', 'Pink', 'Teal', 'Ultramarine', 'White']::text[], array['black', 'pink', 'teal', 'ultramarine', 'white']::text[], array['#1B1B1D', '#F2C6C9', '#7FB6B0', '#4B5CC4', '#F7F7F7']::text[], '128GB', 2299000, 14, null),
+  ('iphone-16e', array['Black', 'White']::text[], array['black', 'white']::text[], array['#1B1B1D', '#F7F7F7']::text[], '128GB', 1699000, 16, null),
+  ('iphone-15', array['Black', 'Blue', 'Green', 'Pink', 'Yellow']::text[], array['black', 'blue', 'green', 'pink', 'yellow']::text[], array['#1B1B1D', '#C9D9E6', '#CFE0CF', '#F7C8D0', '#F2E6B8']::text[], '128GB', 1899000, 15, null),
+  ('iphone-14', array['Blue', 'Midnight', 'Purple', 'Red', 'Starlight']::text[], array['blue', 'midnight', 'purple', 'red', 'starlight']::text[], array['#A7C1D9', '#1F2937', '#D8CDE8', '#C8102E', '#F5F1E8']::text[], '128GB', 1599000, 16, null),
+  ('iphone-duo', array['Night Sky', 'Star White']::text[], array['night-sky', 'star-white']::text[], array['#2B2F3A', '#F4F2EC']::text[], '256GB', 6999000, 4, null),
+  ('ipad', array['Blue', 'Pink', 'Silver', 'Yellow']::text[], array['blue', 'pink', 'silver', 'yellow']::text[], array['#8EC5E8', '#F2A7C3', '#D9D9D9', '#F2D06B']::text[], '128GB', 1299000, 8, null),
+  ('ipad-mini', array['Midnight', 'Starlight']::text[], array['midnight', 'starlight']::text[], array['#2B2F3A', '#F5F1E8']::text[], '128GB', 1899000, 8, null),
+  ('ipad-air-11', array['Blue', 'Purple', 'Space Gray', 'Starlight']::text[], array['blue', 'purple', 'spacegray', 'starlight']::text[], array['#8EC5E8', '#C9B8E8', '#4A4A4C', '#F5F1E8']::text[], '128GB', 2299000, 8, null),
+  ('ipad-air-13', array['Blue', 'Purple', 'Space Gray', 'Starlight']::text[], array['blue', 'purple', 'spacegray', 'starlight']::text[], array['#8EC5E8', '#C9B8E8', '#4A4A4C', '#F5F1E8']::text[], '128GB', 2999000, 8, null),
+  ('ipad-pro-11', array['Silver', 'Space Black']::text[], array['silver', 'spaceblack']::text[], array['#D9D9D9', '#2B2B2D']::text[], '256GB', 3999000, 6, null),
+  ('ipad-pro-13', array['Silver', 'Space Black']::text[], array['silver', 'spaceblack']::text[], array['#D9D9D9', '#2B2B2D']::text[], '256GB', 4999000, 6, null),
+  ('macbook-air-13', array['Midnight', 'Silver', 'Sky Blue', 'Starlight']::text[], array['midnight', 'silver', 'skyblue', 'starlight']::text[], array['#2B2F3A', '#D9D9D9', '#BFD8E6', '#F5F1E8']::text[], '256GB', 3499000, 6, null),
+  ('macbook-air-15', array['Midnight', 'Silver', 'Sky Blue', 'Starlight']::text[], array['midnight', 'silver', 'skyblue', 'starlight']::text[], array['#2B2F3A', '#D9D9D9', '#BFD8E6', '#F5F1E8']::text[], '256GB', 4199000, 6, null),
+  ('macbook-pro-14', array['Space Black', 'Silver']::text[], array['spaceblack', 'silver']::text[], array['#2B2B2D', '#D9D9D9']::text[], '512GB', 5999000, 4, null),
+  ('macbook-pro-16', array['Space Black', 'Silver']::text[], array['spaceblack', 'silver']::text[], array['#2B2B2D', '#D9D9D9']::text[], '512GB', 7499000, 4, null),
+  ('airpods-4', array['White']::text[], array['white']::text[], array['#FFFFFF']::text[], 'One Size', 449000, 20, '/images/products/airpods-4.png'),
+  ('airpods-5', array['White']::text[], array['white']::text[], array['#FFFFFF']::text[], 'One Size', 549000, 20, '/images/products/airpods-5.png'),
+  ('airpods-pro-3', array['White']::text[], array['white']::text[], array['#FFFFFF']::text[], 'One Size', 799000, 20, '/images/products/airpods-pro-3.png'),
+  ('airpods-max', array['Blue', 'Midnight', 'Orange', 'Purple', 'Starlight']::text[], array['blue', 'midnight', 'orange', 'purple', 'starlight']::text[], array['#6C8EBF', '#2B2F3A', '#E8A07A', '#C9B8E8', '#F5F1E8']::text[], 'One Size', 1499000, 15, null)
 )
 insert into public.product_variants
   (product_id, storage, color, color_hex, sku, price, stock, image, sort_order)
 select
   p.id,
-  s.storages[j],
+  s.storage,
   s.colors[i],
   s.hexes[i],
   upper(replace(p.slug, '-', '')) || '-' ||
     upper(replace(s.files[i], '-', '')) || '-' ||
-    upper(replace(s.storages[j], ' ', '')),
-  s.prices[j],
+    upper(replace(s.storage, ' ', '')),
+  s.price,
   s.stock,
   coalesce(s.single_image, '/images/products/' || p.slug || '-' || s.files[i] || '.png'),
-  i * 10 + j
+  i
 from specs s
 join public.products p on p.slug = s.slug
 cross join generate_subscripts(s.colors, 1) as i
-cross join generate_subscripts(s.storages, 1) as j
 on conflict (product_id, storage, color) do update set
   image = excluded.image,
+  price = excluded.price,
+  stock = excluded.stock,
   sort_order = excluded.sort_order;
+
+-- Drop any legacy storage-multiplied variants so one image = one variant
+delete from public.product_variants v
+using (
+  select id, row_number() over (
+    partition by product_id, color order by sort_order, storage
+  ) as rn
+  from public.product_variants
+) ranked
+where v.id = ranked.id and ranked.rn > 1;
 
 -- Keep the Air banner on the new transparent PNG
 update public.banners

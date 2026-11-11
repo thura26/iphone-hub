@@ -100,10 +100,6 @@ export default function Home() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-black/5 sm:bg-gradient-to-r sm:from-black/90 sm:via-black/40 sm:to-transparent" />
             <div className="relative z-10 flex h-full flex-col justify-end p-5 text-white sm:max-w-lg sm:justify-center sm:p-9">
-              <span className="mb-2.5 inline-flex w-fit items-center gap-1.5 rounded-pill border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] backdrop-blur">
-                <Sparkles size={12} />
-                New arrival
-              </span>
               <h1 className="text-balance text-3xl font-bold leading-[1.05] tracking-tight sm:text-5xl">
                 {primaryBanner?.title || 'iPhone 18 Pro'}
               </h1>

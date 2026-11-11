@@ -252,7 +252,7 @@ export default function AdminProducts() {
       </div>
 
       {selected.size > 0 && (
-        <div className="card sticky top-20 z-20 flex flex-wrap items-center gap-2 border-brand/30 bg-brand/[0.03] p-3">
+        <div className="card flex flex-wrap items-center gap-2 border-brand/30 bg-brand/[0.03] p-3">
           <span className="text-xs font-bold text-ink">
             {selected.size} selected
           </span>

@@ -25,6 +25,7 @@ export default function VariantSelector({ variants = [], selected, onChange }) {
     }
   })
   const colors = Array.from(colorMap.values())
+  const storageCount = new Set(variants.map((variant) => variant.storage).filter(Boolean)).size
   const storages = variants
     .filter((variant) => variant.color === selected?.color)
     .sort((a, b) => storageSize(a.storage) - storageSize(b.storage))
@@ -94,40 +95,42 @@ export default function VariantSelector({ variants = [], selected, onChange }) {
         </div>
       </div>
 
-      <div>
-        <div className="mb-2.5 flex items-baseline justify-between">
-          <span className="text-sm font-semibold text-ink">Storage</span>
-          <span className="text-sm text-muted">{selected?.storage || 'Choose storage'}</span>
+      {storageCount > 1 && (
+        <div>
+          <div className="mb-2.5 flex items-baseline justify-between">
+            <span className="text-sm font-semibold text-ink">Storage</span>
+            <span className="text-sm text-muted">{selected?.storage || 'Choose storage'}</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2.5">
+            {storages.map((variant) => {
+              const active = selected?.storage === variant.storage
+              const out = Number(variant.stock) <= 0
+              return (
+                <button
+                  key={variant.id}
+                  type="button"
+                  onClick={() => pickStorage(variant.storage)}
+                  className={cn(
+                    'relative rounded-xl border px-3 py-3 text-sm font-semibold transition-colors',
+                    active
+                      ? 'border-ink bg-soft text-ink'
+                      : 'border-line bg-surface text-ink hover:border-ink/40',
+                    out && 'opacity-45',
+                  )}
+                  aria-pressed={active}
+                >
+                  {variant.storage}
+                  {out && (
+                    <span className="mt-0.5 block text-[10px] font-medium uppercase tracking-wide text-muted">
+                      Out of stock
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
         </div>
-        <div className="grid grid-cols-3 gap-2.5">
-          {storages.map((variant) => {
-            const active = selected?.storage === variant.storage
-            const out = Number(variant.stock) <= 0
-            return (
-              <button
-                key={variant.id}
-                type="button"
-                onClick={() => pickStorage(variant.storage)}
-                className={cn(
-                  'relative rounded-xl border px-3 py-3 text-sm font-semibold transition-colors',
-                  active
-                    ? 'border-ink bg-soft text-ink'
-                    : 'border-line bg-surface text-ink hover:border-ink/40',
-                  out && 'opacity-45',
-                )}
-                aria-pressed={active}
-              >
-                {variant.storage}
-                {out && (
-                  <span className="mt-0.5 block text-[10px] font-medium uppercase tracking-wide text-muted">
-                    Out of stock
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-      </div>
+      )}
     </div>
   )
 }
