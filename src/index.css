@@ -399,6 +399,97 @@ html.dark {
   animation: order-progress 3.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+/* ------------------------------------------------------------
+   Order status timeline
+   ------------------------------------------------------------ */
+.order-step-line {
+  transform-origin: left center;
+}
+
+.order-step-line--complete {
+  animation: order-step-line-draw 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--step-index, 0) * 70ms + 60ms);
+}
+
+.order-step-dot--complete {
+  animation: order-step-dot-pop 480ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--step-index, 0) * 70ms + 90ms);
+}
+
+.order-step-check path {
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: order-step-check-draw 300ms ease-out both;
+  animation-delay: calc(var(--step-index, 0) * 70ms + 300ms);
+}
+
+.order-step-label,
+.order-step-date {
+  animation: order-step-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--step-index, 0) * 70ms + 150ms);
+}
+
+.order-step-pulse {
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 2px solid var(--color-success);
+  pointer-events: none;
+  animation: order-step-pulse 2.8s cubic-bezier(0.22, 1, 0.36, 1) 900ms infinite;
+}
+
+@keyframes order-step-line-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes order-step-dot-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes order-step-check-draw {
+  from {
+    stroke-dashoffset: 40;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes order-step-rise {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes order-step-pulse {
+  0% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -416,6 +507,23 @@ html.dark {
   .order-progress {
     animation: none;
     transform: none;
+  }
+
+  .order-step-line--complete,
+  .order-step-dot--complete,
+  .order-step-check path,
+  .order-step-label,
+  .order-step-date,
+  .order-step-pulse {
+    animation: none;
+  }
+
+  .order-step-check path {
+    stroke-dashoffset: 0;
+  }
+
+  .order-step-pulse {
+    display: none;
   }
 
   .reveal {

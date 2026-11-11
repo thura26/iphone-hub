@@ -281,32 +281,52 @@ export default function OrderDetail() {
                   {ORDER_STATUS_FLOW.map((status, index) => {
                     const complete = index <= currentIndex
                     const current = index === currentIndex
+                    const pulse = current && status !== 'delivered'
                     return (
-                      <div key={status} className="relative flex flex-1 flex-col items-center text-center">
+                      <div
+                        key={status}
+                        className="order-step relative flex flex-1 flex-col items-center text-center"
+                        style={{ '--step-index': index }}
+                      >
                         {index < ORDER_STATUS_FLOW.length - 1 && (
                           <span
+                            aria-hidden="true"
                             className={cn(
-                              'absolute left-[calc(50%+14px)] top-3.5 h-0.5 w-[calc(100%-28px)]',
-                              index < currentIndex ? 'bg-success' : 'bg-line',
+                              'order-step-line absolute left-[calc(50%+14px)] top-3.5 h-0.5 w-[calc(100%-28px)] rounded-full',
+                              index < currentIndex
+                                ? 'order-step-line--complete bg-success'
+                                : 'bg-line',
                             )}
                           />
                         )}
+                        <span className="relative z-10 grid place-items-center">
+                          {pulse && <span aria-hidden="true" className="order-step-pulse" />}
+                          <span
+                            className={cn(
+                              'relative grid h-7 w-7 place-items-center rounded-full border text-[10px] font-bold',
+                              complete
+                                ? 'order-step-dot--complete border-success bg-success text-white'
+                                : 'border-line bg-surface text-muted',
+                              current && 'ring-4 ring-success/15',
+                            )}
+                          >
+                            {complete ? (
+                              <Check className="order-step-check" size={13} strokeWidth={3} />
+                            ) : (
+                              <Circle size={8} fill="currentColor" />
+                            )}
+                          </span>
+                        </span>
                         <span
                           className={cn(
-                            'relative z-10 grid h-7 w-7 place-items-center rounded-full border text-[10px] font-bold',
-                            complete
-                              ? 'border-success bg-success text-white'
-                              : 'border-line bg-surface text-muted',
-                            current && 'ring-4 ring-success/15',
+                            'order-step-label mt-2 text-[10px] font-semibold sm:text-xs',
+                            complete ? 'text-ink' : 'text-muted',
                           )}
                         >
-                          {complete ? <Check size={13} strokeWidth={3} /> : <Circle size={8} fill="currentColor" />}
-                        </span>
-                        <span className={cn('mt-2 text-[10px] font-semibold sm:text-xs', complete ? 'text-ink' : 'text-muted')}>
                           {ORDER_STATUS_META[status].label}
                         </span>
                         {statusTime(status) && (
-                          <span className="mt-0.5 hidden text-[9px] text-muted sm:block">
+                          <span className="order-step-date mt-0.5 hidden text-[9px] text-muted sm:block">
                             {formatDate(statusTime(status))}
                           </span>
                         )}
