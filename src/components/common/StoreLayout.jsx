@@ -1,12 +1,11 @@
 import { Suspense, useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { ArrowUp, Truck } from 'lucide-react'
+import { ArrowUp } from 'lucide-react'
 import Header from '@/components/common/Header'
 import Footer from '@/components/common/Footer'
 import CartDrawer from '@/components/common/CartDrawer'
 import Loader from '@/components/common/Loader'
-import { useSiteSettings } from '@/context/SiteSettingsContext'
-import { cn, formatMMK } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -16,11 +15,8 @@ function ScrollToTop() {
   return null
 }
 
-const RING_RADIUS = 20
-const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
-
 function BackToTop() {
-  const { visible, progress } = useBackToTop()
+  const visible = useBackToTopVisible()
 
   return (
     <button
@@ -35,50 +31,19 @@ function BackToTop() {
           : 'pointer-events-none translate-y-4 scale-75 opacity-0',
       )}
     >
-      <svg
-        viewBox="0 0 48 48"
-        className="absolute inset-0 h-full w-full -rotate-90"
-        aria-hidden="true"
-      >
-        <circle
-          cx="24"
-          cy="24"
-          r={RING_RADIUS}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          className="text-line"
-        />
-        <circle
-          cx="24"
-          cy="24"
-          r={RING_RADIUS}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeDasharray={RING_CIRCUMFERENCE}
-          strokeDashoffset={RING_CIRCUMFERENCE * (1 - progress)}
-          className="text-brand transition-[stroke-dashoffset] duration-150 ease-out"
-        />
-      </svg>
       <ArrowUp
-        size={17}
-        className="relative transition-transform duration-300 group-hover:-translate-y-1"
+        size={18}
+        className="transition-transform duration-300 group-hover:-translate-y-1"
       />
     </button>
   )
 }
 
-function useBackToTop() {
-  const [state, setState] = useState({ visible: false, progress: 0 })
+function useBackToTopVisible() {
+  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => {
-      const max = document.documentElement.scrollHeight - window.innerHeight
-      const progress = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0
-      setState({ visible: window.scrollY > 480, progress })
-    }
+    const onScroll = () => setVisible(window.scrollY > 480)
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll)
@@ -88,38 +53,15 @@ function useBackToTop() {
     }
   }, [])
 
-  return state
+  return visible
 }
 
 export default function StoreLayout() {
   const { pathname } = useLocation()
-  const { shipping, announcement } = useSiteSettings()
-  const freeThreshold = Number(shipping.free_threshold) || 0
-  const hideAnnouncement =
-    announcement.enabled === false ||
-    pathname === '/checkout' ||
-    pathname.startsWith('/order-success')
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <ScrollToTop />
-      {!hideAnnouncement && (
-        <div className="border-b border-line bg-surface">
-          <div className="wrap flex min-h-9 items-center justify-center gap-1.5 py-1 text-center text-[11px] text-muted">
-            <Truck size={13} className="shrink-0 text-brand" />
-            {freeThreshold > 0 ? (
-              <span>
-                Free standard delivery on orders over{' '}
-                <strong className="font-semibold text-ink">{formatMMK(freeThreshold)}</strong>
-              </span>
-            ) : (
-              <span>Free standard delivery on every order</span>
-            )}
-            <span className="mx-1 hidden text-line sm:inline">|</span>
-            <span className="hidden sm:inline">7-day easy returns</span>
-          </div>
-        </div>
-      )}
       <Header />
       <main className="flex-1">
         <div key={pathname} className="page-enter">

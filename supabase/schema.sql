@@ -215,10 +215,6 @@ create table if not exists public.settings (
   updated_at timestamptz not null default now()
 );
 
-insert into public.settings (key, value)
-values ('announcement', '{"enabled": true}'::jsonb)
-on conflict (key) do nothing;
-
 -- ------------------------------------------------------------
 -- Returns, audit log, newsletter
 -- ------------------------------------------------------------
