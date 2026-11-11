@@ -199,7 +199,7 @@ export default function HeaderSearch({
             }}
             onFocus={() => setOpen(true)}
             onKeyDown={handleKeyDown}
-            placeholder="Search iPhones, accessories…"
+            placeholder="Search products, colors…"
             className={cn(
               'h-10 w-full rounded-pill border border-line bg-soft/70 pl-9 pr-9 text-sm text-ink outline-none transition-all placeholder:text-muted focus:border-brand focus:bg-surface',
               inputClassName,

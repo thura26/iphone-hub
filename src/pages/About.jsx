@@ -85,7 +85,7 @@ export default function About() {
                 className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-white/70 blur-2xl dark:bg-white/10"
               />
               <img
-                src="/images/products/iphone-18-pro-glacier.webp"
+                src="/images/products/iphone-18-pro-glacier.png"
                 alt="iPhone 18 Pro in Glacier"
                 loading="lazy"
                 decoding="async"

@@ -1,6 +1,16 @@
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+function storageSize(value) {
+  const match = String(value).match(/(\d+(?:\.\d+)?)\s*(TB|GB|MB)/i)
+  if (!match) return Number.POSITIVE_INFINITY
+  const amount = Number.parseFloat(match[1])
+  const unit = match[2].toUpperCase()
+  if (unit === 'TB') return amount * 1024
+  if (unit === 'MB') return amount / 1024
+  return amount
+}
+
 export default function VariantSelector({ variants = [], selected, onChange }) {
   if (!variants.length) return null
 
@@ -17,12 +27,7 @@ export default function VariantSelector({ variants = [], selected, onChange }) {
   const colors = Array.from(colorMap.values())
   const storages = variants
     .filter((variant) => variant.color === selected?.color)
-    .sort((a, b) => {
-      const aNum = parseFloat(a.storage)
-      const bNum = parseFloat(b.storage)
-      if (Number.isFinite(aNum) && Number.isFinite(bNum)) return aNum - bNum
-      return String(a.storage).localeCompare(String(b.storage))
-    })
+    .sort((a, b) => storageSize(a.storage) - storageSize(b.storage))
 
   const pickColor = (color) => {
     const sameStorage = variants.find(

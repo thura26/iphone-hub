@@ -178,7 +178,7 @@ export default function MobileMenu({ open, onClose }) {
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search iPhones, accessories…"
+                placeholder="Search products, colors…"
                 className="field pl-10"
                 aria-label="Search products"
               />

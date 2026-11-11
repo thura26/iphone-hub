@@ -208,7 +208,7 @@ export default function Auth() {
           </div>
         </div>
         <img
-          src="/images/products/iphone-18-pro-burgundy.webp"
+          src="/images/products/iphone-18-pro-burgundy.png"
           alt="iPhone 18 Pro"
           loading="lazy"
           decoding="async"

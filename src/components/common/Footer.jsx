@@ -112,6 +112,9 @@ export default function Footer() {
               <li><Link className="hover:text-ink" to="/shop?category=iphone-18">iPhone 18</Link></li>
               <li><Link className="hover:text-ink" to="/shop?category=iphone-17">iPhone 17</Link></li>
               <li><Link className="hover:text-ink" to="/shop?category=iphone-air">iPhone Air</Link></li>
+              <li><Link className="hover:text-ink" to="/shop?category=ipad">iPad</Link></li>
+              <li><Link className="hover:text-ink" to="/shop?category=macbook">MacBook</Link></li>
+              <li><Link className="hover:text-ink" to="/shop?category=airpods">AirPods</Link></li>
               <li><Link className="hover:text-ink" to="/shop?category=accessories">Accessories</Link></li>
               <li><Link className="hover:text-ink" to="/shop">Shop all</Link></li>
             </ul>

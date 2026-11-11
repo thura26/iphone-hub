@@ -324,7 +324,7 @@ export default function AdminCategories() {
               className="field"
               value={form.image}
               onChange={(event) => update('image', event.target.value)}
-              placeholder="/images/products/iphone-18-pro-black.webp"
+              placeholder="/images/products/iphone-18-pro-black.png"
             />
           </div>
           <div>

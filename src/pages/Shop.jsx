@@ -115,18 +115,18 @@ export default function Shop() {
   return (
     <div className="wrap py-6 sm:py-9">
       <Seo
-        title={activeCategory ? `${activeCategory.name} in Myanmar` : 'Shop all iPhones & accessories'}
+        title={activeCategory ? `${activeCategory.name} in Myanmar` : 'Shop all Apple products'}
         description={
           activeCategory
             ? `Shop genuine ${activeCategory.name} at iPhone Hub. Flexible storage, colors and local warranty with delivery across Myanmar.`
-            : `Browse every iPhone and Apple accessory at iPhone Hub. Compare prices in MMK, check stock, and enjoy free delivery over ${formatMMK(Number(shipping.free_threshold) || 0)}.`
+            : `Browse every iPhone, iPad, MacBook, AirPods and Apple accessory at iPhone Hub. Compare prices in MMK, check stock, and enjoy free delivery over ${formatMMK(Number(shipping.free_threshold) || 0)}.`
         }
         url={activeCategory ? `/shop?category=${activeCategory.slug}` : '/shop'}
         noindex={Boolean(queryParam)}
         keywords={
           activeCategory
             ? `${activeCategory.name} Myanmar, buy ${activeCategory.name} Yangon`
-            : 'buy iPhone Myanmar, iPhone prices Yangon, Apple accessories'
+            : 'buy iPhone Myanmar, iPad prices Yangon, MacBook Myanmar, AirPods Myanmar'
         }
       />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -138,7 +138,7 @@ export default function Shop() {
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
             {activeCategory
               ? `Explore the ${activeCategory.name} lineup, available with flexible storage and colors.`
-              : 'Every iPhone and accessory in one place. Genuine Apple products with local warranty.'}
+              : 'Every iPhone, iPad, MacBook, AirPods and accessory in one place. Genuine Apple products with local warranty.'}
           </p>
         </div>
         <div className="text-sm text-muted sm:text-right">

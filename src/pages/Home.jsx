@@ -80,8 +80,8 @@ export default function Home() {
   return (
     <div>
       <Seo
-        title="iPhone Hub — Premium iPhones & Accessories in Myanmar"
-        description={`Shop the latest iPhone 18 Pro, iPhone Air and genuine Apple accessories at iPhone Hub. Free delivery over ${freeShippingLabel}, 7-day returns and 1-year warranty across Myanmar.`}
+        title="iPhone Hub — Premium Apple Products in Myanmar"
+        description={`Shop the latest iPhone 18 Pro, iPhone Air, iPad, MacBook, AirPods and genuine Apple accessories at iPhone Hub. Free delivery over ${freeShippingLabel}, 7-day returns and 1-year warranty across Myanmar.`}
         url="/"
         keywords="iPhone Myanmar, buy iPhone Yangon, iPhone 18 Pro price, Apple accessories Myanmar"
       />
@@ -142,7 +142,7 @@ export default function Home() {
                 <ChevronRight size={15} />
               </span>
               <img
-                src={secondaryBanner?.image || '/images/products/iphone-air-skyblue.webp'}
+                src={secondaryBanner?.image || '/images/products/iphone-air-skyblue.png'}
                 alt="iPhone Air"
                 loading="lazy"
                 decoding="async"
@@ -194,7 +194,7 @@ export default function Home() {
         <Reveal className="mb-5 flex items-end justify-between">
           <div>
             <p className="eyebrow">Handpicked</p>
-            <h2 className="section-title mt-1">Featured iPhones</h2>
+            <h2 className="section-title mt-1">Featured products</h2>
           </div>
           <Link to="/shop" className="flex items-center gap-1 text-sm font-semibold text-brand">
             Shop all <ChevronRight size={15} />
@@ -280,7 +280,7 @@ export default function Home() {
             </div>
           </div>
           <img
-            src="/images/products/iphone-18-pro-max-burgundy.webp"
+            src="/images/products/iphone-18-pro-max-burgundy.png"
             alt="iPhone 18 Pro Max"
             loading="lazy"
             decoding="async"
