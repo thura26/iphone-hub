@@ -71,7 +71,7 @@ export default function Footer() {
               ))}
             </div>
 
-            <div className="mt-6 max-w-xs">
+            <div className="mt-6 w-full max-w-none lg:max-w-xs">
               <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted">
                 Newsletter
               </p>
@@ -80,7 +80,7 @@ export default function Footer() {
               </p>
               <form
                 onSubmit={subscribe}
-                className="mt-2.5 flex overflow-hidden rounded-pill border border-line bg-soft/60 p-1"
+                className="mt-2.5 flex w-full overflow-hidden rounded-pill border border-line bg-soft/60 p-1"
               >
                 <input
                   type="email"

@@ -16,8 +16,11 @@ function ScrollToTop() {
   return null
 }
 
+const RING_RADIUS = 20
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
+
 function BackToTop() {
-  const visible = useBackToTopVisible()
+  const { visible, progress } = useBackToTop()
 
   return (
     <button
@@ -26,28 +29,66 @@ function BackToTop() {
       aria-label="Back to top"
       title="Back to top"
       className={cn(
-        'fixed bottom-5 right-4 z-30 grid h-11 w-11 place-items-center rounded-full border border-line bg-surface/90 text-ink shadow-[var(--shadow-float)] backdrop-blur transition-all duration-300 hover:bg-soft sm:bottom-6 sm:right-6',
+        'group fixed bottom-5 right-4 z-30 grid h-12 w-12 place-items-center rounded-full border border-line bg-surface/90 text-ink shadow-[var(--shadow-float)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:bg-soft active:scale-95 sm:bottom-6 sm:right-6',
         visible
-          ? 'translate-y-0 opacity-100'
-          : 'pointer-events-none translate-y-3 opacity-0',
+          ? 'back-to-top-in translate-y-0 opacity-100'
+          : 'pointer-events-none translate-y-4 scale-75 opacity-0',
       )}
     >
-      <ArrowUp size={18} />
+      <svg
+        viewBox="0 0 48 48"
+        className="absolute inset-0 h-full w-full -rotate-90"
+        aria-hidden="true"
+      >
+        <circle
+          cx="24"
+          cy="24"
+          r={RING_RADIUS}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          className="text-line"
+        />
+        <circle
+          cx="24"
+          cy="24"
+          r={RING_RADIUS}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeDasharray={RING_CIRCUMFERENCE}
+          strokeDashoffset={RING_CIRCUMFERENCE * (1 - progress)}
+          className="text-brand transition-[stroke-dashoffset] duration-150 ease-out"
+        />
+      </svg>
+      <ArrowUp
+        size={17}
+        className="relative transition-transform duration-300 group-hover:-translate-y-1"
+      />
     </button>
   )
 }
 
-function useBackToTopVisible() {
-  const [visible, setVisible] = useState(false)
+function useBackToTop() {
+  const [state, setState] = useState({ visible: false, progress: 0 })
 
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 480)
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight
+      const progress = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0
+      setState({ visible: window.scrollY > 480, progress })
+    }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
   }, [])
 
-  return visible
+  return state
 }
 
 export default function StoreLayout() {

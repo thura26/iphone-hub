@@ -305,6 +305,25 @@ html.dark {
   animation: page-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+@keyframes back-to-top-in {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.8);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.back-to-top-in {
+  animation: back-to-top-in 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .reveal {
   opacity: 0;
   translate: 0 26px;
@@ -389,6 +408,7 @@ html.dark {
   .animate-fade-in,
   .animate-float,
   .page-enter,
+  .back-to-top-in,
   .select-panel {
     animation: none;
   }

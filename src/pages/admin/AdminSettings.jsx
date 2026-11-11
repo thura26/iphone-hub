@@ -252,52 +252,94 @@ export default function AdminSettings() {
             </div>
           </section>
 
-          <section className="card p-5">
-            <div className="flex items-center gap-2">
-              <Megaphone size={17} className="text-brand" />
-              <h2 className="text-sm font-bold text-ink">Announcement bar</h2>
-            </div>
-            <p className="mt-1 text-[11px] text-muted">
-              The slim strip above the header on the storefront. It shows the free delivery
-              threshold and the return window.
-            </p>
-            <div className="mt-4 flex items-center justify-between gap-4 rounded-xl border border-line bg-soft/60 p-4">
+          <section className="card overflow-hidden">
+            <div className="flex flex-wrap items-start justify-between gap-4 p-5">
               <div>
-                <p className="text-sm font-semibold text-ink">Show announcement bar</p>
-                <p className="mt-0.5 text-[11px] text-muted">
-                  Hidden on checkout and order confirmation pages.
+                <div className="flex items-center gap-2">
+                  <Megaphone size={17} className="text-brand" />
+                  <h2 className="text-sm font-bold text-ink">Announcement bar</h2>
+                </div>
+                <p className="mt-1 max-w-md text-[11px] leading-relaxed text-muted">
+                  The slim strip above the header on the storefront. It shows the free delivery
+                  threshold and the return window.
                 </p>
               </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={announcement.enabled !== false}
-                aria-label="Show announcement bar"
-                onClick={() =>
-                  setAnnouncement((current) => ({
-                    ...current,
-                    enabled: current.enabled === false,
-                  }))
-                }
-                className={cn(
-                  'relative h-6 w-11 shrink-0 rounded-full transition-colors',
-                  announcement.enabled !== false ? 'bg-brand' : 'bg-line',
-                )}
-              >
+              <div className="flex shrink-0 items-center gap-3">
                 <span
                   className={cn(
-                    'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform',
-                    announcement.enabled !== false ? 'translate-x-[22px]' : 'translate-x-0.5',
+                    'rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider',
+                    announcement.enabled !== false
+                      ? 'bg-success/10 text-success'
+                      : 'bg-soft text-muted',
                   )}
-                />
-              </button>
-            </div>
-            {announcement.enabled !== false && (
-              <div className="mt-3 rounded-lg border border-line bg-soft/40 px-3 py-2 text-center text-[11px] text-muted">
-                Free standard delivery on orders over{' '}
-                <span className="font-semibold text-ink">{formatMMK(shipping.free_threshold)}</span>
+                >
+                  {announcement.enabled !== false ? 'Live' : 'Hidden'}
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={announcement.enabled !== false}
+                  aria-label="Show announcement bar"
+                  onClick={() =>
+                    setAnnouncement((current) => ({
+                      ...current,
+                      enabled: current.enabled === false,
+                    }))
+                  }
+                  className={cn(
+                    'relative h-6 w-11 shrink-0 rounded-full transition-colors',
+                    announcement.enabled !== false ? 'bg-brand' : 'bg-line',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform',
+                      announcement.enabled !== false ? 'translate-x-[22px]' : 'translate-x-0.5',
+                    )}
+                  />
+                </button>
               </div>
-            )}
+            </div>
+
+            <div className="border-t border-line bg-soft/40 px-5 py-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">
+                  Preview
+                </p>
+                <p className="inline-flex items-center gap-1.5 text-[10px] text-muted">
+                  <span
+                    className={cn(
+                      'h-1.5 w-1.5 rounded-full',
+                      announcement.enabled !== false ? 'bg-success' : 'bg-line',
+                    )}
+                  />
+                  {announcement.enabled !== false
+                    ? 'Visible on storefront'
+                    : 'Hidden on storefront'}
+                </p>
+              </div>
+              <div
+                className={cn(
+                  'mt-2.5 overflow-hidden rounded-lg border border-line bg-surface transition-opacity duration-300',
+                  announcement.enabled !== false ? 'opacity-100' : 'opacity-45',
+                )}
+              >
+                <div className="flex min-h-9 flex-wrap items-center justify-center gap-x-2 gap-y-0.5 px-3 py-2 text-center text-[11px] text-muted">
+                  <Truck size={13} className="shrink-0 text-brand" />
+                  <span>
+                    Free standard delivery on orders over{' '}
+                    <strong className="font-semibold text-ink">
+                      {formatMMK(Number(shipping.free_threshold) || 0)}
+                    </strong>
+                  </span>
+                  <span className="hidden text-line sm:inline">|</span>
+                  <span className="hidden sm:inline">7-day easy returns</span>
+                </div>
+              </div>
+              <p className="mt-2 text-[10px] text-muted">
+                Hidden automatically on checkout and order confirmation pages.
+              </p>
+            </div>
           </section>
 
           <section className="card p-5">
